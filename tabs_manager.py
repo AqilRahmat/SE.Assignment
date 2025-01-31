@@ -1,9 +1,10 @@
-#this file is used to switch between the tabs inside the program
+#this file is only used to switch between the tabs inside the program.
+#if you do edit this file, please make sure everything works before committing
 from tabs.accountant import Account
 from tabs.admin import Admin
 from tabs.login import Login
 from tabs.parent import Parent
-from tabs.teacher import Teacher
+from tabs.registration import Register
 
 
 class FrameManager:
@@ -12,9 +13,9 @@ class FrameManager:
         self.frames = {
             "Login": Login(self.root, self),
             "Admin": Admin(self.root, self),
-            "Teacher" : Teacher(self.root, self),
             "Parent" : Parent(self.root, self),
             "Account" : Account(self.root, self),
+            "Register" : Register(self.root, self),
         }
 
     def show_frame(self, name):

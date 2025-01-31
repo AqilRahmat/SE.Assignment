@@ -1,3 +1,6 @@
+#TODO: Can manage fee record (add, view, update, delete)
+#TODO: Generate invoice
+
 import customtkinter as ctk
 
 class Account(ctk.CTkFrame):
@@ -5,7 +8,7 @@ class Account(ctk.CTkFrame):
         super().__init__(parent)
         self.controller = controller
 
-        label = ctk.CTkLabel(self, text="Account Frame")
+        label = ctk.CTkLabel(self, text="Accountant")
         label.pack(pady=20)
 
         button = ctk.CTkButton(self, text="Exit",

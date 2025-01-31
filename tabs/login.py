@@ -1,3 +1,5 @@
+#TODO: Will navigate user to the correct destination based on their login info
+
 import sys
 
 import customtkinter as ctk
@@ -14,8 +16,8 @@ class Login(ctk.CTkFrame):
                                command=lambda: self.controller.show_frame("Admin"))
         button.pack(pady=10)
 
-        button = ctk.CTkButton(self, text="Teacher",
-                               command=lambda: self.controller.show_frame("Teacher"))
+        button = ctk.CTkButton(self, text="Registration",
+                               command=lambda: self.controller.show_frame("Register"))
         button.pack(pady=10)
 
         button = ctk.CTkButton(self, text="Parent",

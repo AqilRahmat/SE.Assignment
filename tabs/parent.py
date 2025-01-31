@@ -1,3 +1,5 @@
+#TODO: Can view fees, and make payment, can also view payment history
+
 import customtkinter as ctk
 
 class Parent(ctk.CTkFrame):

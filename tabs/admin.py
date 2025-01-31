@@ -1,3 +1,7 @@
+#TODO: Admin can add/remove teacher & accountant account
+#TODO: Can view parents information
+#TODO: Can view & manage (update payment), view payment history view fee status
+
 import customtkinter as ctk
 
 class Admin(ctk.CTkFrame):
