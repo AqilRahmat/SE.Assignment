@@ -1,0 +1,31 @@
+import sys
+
+import customtkinter as ctk
+
+class Login(ctk.CTkFrame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        label = ctk.CTkLabel(self, text="Login Frame")
+        label.pack(pady=20)
+
+        button = ctk.CTkButton(self, text="Admin",
+                               command=lambda: self.controller.show_frame("Admin"))
+        button.pack(pady=10)
+
+        button = ctk.CTkButton(self, text="Teacher",
+                               command=lambda: self.controller.show_frame("Teacher"))
+        button.pack(pady=10)
+
+        button = ctk.CTkButton(self, text="Parent",
+                               command=lambda: self.controller.show_frame("Parent"))
+        button.pack(pady=10)
+
+        button = ctk.CTkButton(self, text="Account",
+                               command=lambda: self.controller.show_frame("Account"))
+        button.pack(pady=10)
+
+        button = ctk.CTkButton(self, text="Exit",
+                               command=lambda: sys.exit(0))
+        button.pack(pady=10)
