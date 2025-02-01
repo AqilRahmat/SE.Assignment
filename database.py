@@ -1,5 +1,4 @@
 #NOTE : This part is only for table creation. DO NOT alter this
-import cmath
 import sqlite3
 
 #connect to the database

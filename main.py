@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import database
+import dbfunction
 from dbfunction import update_overdue_status
 from tabs_manager import FrameManager
 

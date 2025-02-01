@@ -1,12 +1,16 @@
 #TODO: Can view fees, and make payment, can also view payment history
 #   GUI Done, just need to add functionality
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import customtkinter as ctk
-from customtkinter import CTkToplevel
 
+import dbfunction
 import navbar
+from tabs.login import Login
+
 
 class Parent(ctk.CTkFrame):
+    phonenum = None
+
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -125,18 +129,17 @@ class Parent(ctk.CTkFrame):
         label.pack()
 
         # Username Label
-        username = "TBD : get username from login"
+        username = Login.username_for_profile
         username_label = ctk.CTkLabel(profile, text=username)
         username_label.pack()
 
         # contact num change
-        self.number = "0123456789"
-
         number_label = ctk.CTkLabel(profile, text="Phone Number")
         number_label.pack(pady=5, padx=5)
 
-        real_number_label = ctk.CTkLabel(profile, text=self.number)
-        real_number_label.pack(pady=5, padx=5)
+        phonenum = Login.phonenum_for_profile
+        self.real_number_label = ctk.CTkLabel(profile, text=phonenum)
+        self.real_number_label.pack(pady=5, padx=5)
 
         self.number_change_field = ctk.CTkEntry(profile, placeholder_text="Insert new Number")
         self.number_change_field.pack(pady=5)
@@ -148,7 +151,6 @@ class Parent(ctk.CTkFrame):
         password_label = ctk.CTkLabel(profile, text="Password")
         password_label.pack(pady=5, padx=5)
 
-        self.password = "test"
         self.password_change_field = ctk.CTkEntry(profile, show="*", placeholder_text="Insert New Password")
         self.password_change_field.pack(pady=5)
 
@@ -157,16 +159,36 @@ class Parent(ctk.CTkFrame):
 
     def password_change(self):
         new_password = self.password_change_field.get()
-        if new_password == self.password:
-            print("New password cannot be the same as the old one.")
+        if new_password == Login.password_for_profile:
+            messagebox.showinfo("ERROR", "New password cannot be the same as the old one.")
+            self.password_change_field.delete(0, 'end')
+            return
         else:
-            self.password = new_password
-            print("Password changed successfully!")
+            dbfunction.update_entry('parent', 'parent_password', new_password, 'parent_id', Login.ic_for_profile)
+            messagebox.showinfo("Password changed", "Password changed successfully!")
+            self.password_change_field.delete(0, 'end')
+            return
 
     def number_change(self):
         new_number = self.number_change_field.get()
-        if new_number == self.number:
-            print("New number cannot be the same as the old one.")
+        if new_number == Login.phonenum_for_profile:
+            messagebox.showinfo("ERROR", "New number cannot be the same as the old one.")
+            self.number_change_field.delete(0, 'end')
+            return
         else:
-            self.number = new_number
-            print("number changed successfully!")
+            # Update the phone number in the database
+            dbfunction.update_entry('parent', 'parent_contactnum', new_number, 'parent_id', Login.ic_for_profile)
+
+            # Update the phonenum in the Login class and real_number_label
+            Login.phonenum_for_profile = new_number
+            self.real_number_label.configure(text=Login.phonenum_for_profile)
+
+            # Explicitly refresh the label
+            self.real_number_label.update_idletasks()  # Force UI to update
+
+            # Show success message
+            messagebox.showinfo("Number changed", "Number changed successfully!")
+
+            # Clear the input field
+            self.number_change_field.delete(0, 'end')
+            return

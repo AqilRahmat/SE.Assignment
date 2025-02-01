@@ -29,14 +29,18 @@ def update_entry(table, column, value, condition_column, condition_value):
     conn.close()
 
 #fetch data from the table
-def fetch_entry(table, column, condition_column, condition_value):
+def fetch_entry(column, table, condition_column, condition_value):
     conn = sqlite3.connect("CeriaPay.db")
     c = conn.cursor()
 
     query = "SELECT {} FROM {} WHERE {} = ?".format(column, table, condition_column)
     c.execute(query, (condition_value,))
 
-    return query
+    result = c.fetchone()
+
+    conn.close()
+
+    return result[0] if result else None
 
 #Insert into parent table
 def insert_into_parentdatabase(parentid, feeid, name, contact, user, password):
@@ -57,7 +61,7 @@ def insert_into_admindatabase(id, name, num, user, password):
     c = conn.cursor()
 
     c.execute('''
-    INSERT INTO admin (admin_id, admin_name, admin_contactnum, admin_username, admin_password)
+    INSERT INTO administrator (admin_id, admin_name, admin_contactnum, admin_username, admin_password)
     VALUES(?,?,?,?,?)
     ''', (id, name, num, user, password))
 
