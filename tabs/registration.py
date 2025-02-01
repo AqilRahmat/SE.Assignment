@@ -27,7 +27,6 @@ class Register(ctk.CTkFrame):
 
         email_icon = ctk.CTkImage(dark_image=email_icon_data, light_image=email_icon_data, size=(20, 20))
         password_icon = ctk.CTkImage(dark_image=password_icon_data, light_image=password_icon_data, size=(17, 17))
-        google_icon = ctk.CTkImage(dark_image=google_icon_data, light_image=google_icon_data, size=(17, 17))
 
         # Right Side Register Frame
         register_frame = ctk.CTkFrame(self, fg_color="#ffffff", width=384, height=720)

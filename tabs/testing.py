@@ -9,6 +9,7 @@ class Testing(ctk.CTkFrame):
         super().__init__(parent)
         self.controller = controller
 
+
         label = ctk.CTkLabel(self, text="Testing")
         label.pack(pady=20)
 

@@ -9,6 +9,7 @@ class Account(ctk.CTkFrame):
         super().__init__(parent)
         self.controller = controller
 
+
         navbar.nav(self)
 
         label = ctk.CTkLabel(self, text="Accountant")
