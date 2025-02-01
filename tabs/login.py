@@ -1,4 +1,4 @@
-#TODO: Will navigate user to the correct destination based on their login info
+#TODO: for testing purpose
 
 import sys
 

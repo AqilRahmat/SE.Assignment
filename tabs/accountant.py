@@ -2,11 +2,14 @@
 #TODO: Generate invoice
 
 import customtkinter as ctk
+import navbar
 
 class Account(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+
+        navbar.nav(self)
 
         label = ctk.CTkLabel(self, text="Accountant")
         label.pack(pady=20)
