@@ -15,5 +15,5 @@ class Account(ctk.CTkFrame):
         label.pack(pady=20)
 
         button = ctk.CTkButton(self, text="Exit",
-                               command=lambda: self.controller.show_frame("Login"))
+                               command=lambda: self.controller.show_frame("Testing"))
         button.pack(pady=10)

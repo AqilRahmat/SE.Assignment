@@ -20,7 +20,7 @@ def parent_nav(self):
     logo_button.image = logo_image
 
     logout_button = ctk.CTkButton(navbar, text="Logout",
-                                  command=lambda: self.controller.show_frame("Login"),
+                                  command=lambda: self.controller.show_frame("Testing"),
                                   width=10,
                                   height=50)
     logout_button.pack(side="right", padx=5, pady=5)
@@ -55,7 +55,7 @@ def nav(self):
     logo_button.image = logo_image
 
     logout_button = ctk.CTkButton(navbar, text="Logout",
-                                  command=lambda: self.controller.show_frame("Login"),
+                                  command=lambda: self.controller.show_frame("Testing"),
                                   width=10,
                                   height=50)
     logout_button.pack(side="right", padx=5, pady=5)
