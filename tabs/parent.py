@@ -1,5 +1,6 @@
 #TODO: Can view fees, and make payment, can also view payment history
 #   GUI Done, just need to add functionality
+import sqlite3
 from tkinter import ttk, messagebox
 import customtkinter as ctk
 
@@ -27,6 +28,7 @@ class Parent(ctk.CTkFrame):
     def create_frame_for_parent(self):
         self.fees_frame()
         self.history_frame()
+        self.populate_parent_tree()
 
     def fees_frame(self):
         # Create fees frame with padding and background color
@@ -49,8 +51,10 @@ class Parent(ctk.CTkFrame):
                                     text_color="black")
         amount_label.pack(fill='x', pady=5)  # Make label fill horizontally
 
+        amount_owed = self.get_amount_owed()
+
         amount_number = ctk.CTkLabel(amount_frame,
-                                     text="NUMBER",
+                                     text=amount_owed,
                                      font=("Arial", 12),
                                      text_color="black")
         amount_number.pack(fill='x', pady=5)  # Make label fill horizontally
@@ -67,8 +71,10 @@ class Parent(ctk.CTkFrame):
                                      text_color="black")
         duedate_label.pack(fill='x', pady=5)  # Make label fill horizontally
 
+        duedate_actual = self.get_due_date()
+
         duedate_time = ctk.CTkLabel(duedate_frame,
-                                    text="TIME DUE",
+                                    text=duedate_actual,
                                     font=("Arial", 12),
                                     text_color="black")
         duedate_time.pack(fill='x', pady=5)  # Make label fill horizontally
@@ -76,6 +82,31 @@ class Parent(ctk.CTkFrame):
         # Payment button placed at the bottom of the fees_frame, aligned right
         payment_button = ctk.CTkButton(fees_frame, text="Make Payment", command=self.payment_window)
         payment_button.pack(side="left", fill='both', padx=10, pady=10)
+
+    def get_due_date(self):
+        conn = sqlite3.connect("CeriaPay.db")
+        c = conn.cursor()
+
+        amount  = c.execute("SELECT feerecord_duedate FROM feerecord WHERE feerecord_status = 'OVERDUE' or feerecord_status = 'Pending' ORDER BY feerecord_duedate ASC LIMIT 1")
+
+        amount = amount.fetchone()[0]
+
+        c.close()
+
+        return amount
+
+    def get_amount_owed(self):
+        conn = sqlite3.connect("CeriaPay.db")
+        c = conn.cursor()
+
+        amount  = c.execute("SELECT feerecord_amount FROM feerecord WHERE feerecord_status = 'OVERDUE' or feerecord_status = 'Pending' ORDER BY feerecord_duedate ASC LIMIT 1")
+
+        amount = amount.fetchone()[0]
+
+        c.close()
+
+        return amount
+
 
     def history_frame(self):
         table_frame = ctk.CTkFrame(self.scrollable_frame,
@@ -85,19 +116,19 @@ class Parent(ctk.CTkFrame):
                                    corner_radius=15)
         table_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        self.tree = ttk.Treeview(table_frame, columns=("num", "id", "amount", "date"), show="headings")
+        self.tree = ttk.Treeview(table_frame, columns=("id", "date", "amount", "status"), show="headings")
 
         # Define column headings
-        self.tree.heading("num", text="Num")
         self.tree.heading("id", text="ID")
+        self.tree.heading("date", text="Due Date")
         self.tree.heading("amount", text="Amount")
-        self.tree.heading("date", text="Date")
+        self.tree.heading("status", text="Status")
 
         # Define column widths
-        self.tree.column("num", width=50, anchor="center")
-        self.tree.column("id", width=100, anchor="center")
+        self.tree.column("id", width=50, anchor="center")
+        self.tree.column("date", width=100, anchor="center")
         self.tree.column("amount", width=100, anchor="center")
-        self.tree.column("date", width=150, anchor="center")
+        self.tree.column("status", width=150, anchor="center")
 
         # Add a vertical scrollbar for the table
         scrollbar = ctk.CTkScrollbar(table_frame, command=self.tree.yview)
@@ -192,3 +223,17 @@ class Parent(ctk.CTkFrame):
             # Clear the input field
             self.number_change_field.delete(0, 'end')
             return
+
+    def populate_parent_tree(self):
+        parent_id_for_tree = Login.ic_for_profile
+        print(parent_id_for_tree)
+        """Loads all records into the table."""
+        for row in self.tree.get_children():
+            self.tree.delete(row)  # Clear table
+        conn = sqlite3.connect("CeriaPay.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT feerecord_id , feerecord_duedate, feerecord_amount, feerecord_status FROM feerecord WHERE parent_id = ? ORDER BY feerecord_duedate ASC", (parent_id_for_tree,))
+        for record in cursor.fetchall():
+            self.tree.insert("", "end", values=record)
+        conn.close()

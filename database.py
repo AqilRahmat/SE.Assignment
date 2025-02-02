@@ -32,27 +32,27 @@ def create_table():
     accountant_password TEXT NOT NULL
     )''')
 
+    # parent table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS parent (
+        parent_id TEXT PRIMARY KEY,
+        parent_name TEXT NOT NULL,
+        parent_contactnum TEXT NOT NULL,
+        parent_username TEXT NOT NULL,
+        parent_password TEXT NOT NULL
+        )''')
+
     # feerecord
     c.execute('''
         CREATE TABLE IF NOT EXISTS feerecord  (
         feerecord_id TEXT PRIMARY KEY,
+        parent_id TEXT NOT NULL,
         feerecord_duedate DATE NOT NULL,
         feerecord_amount REAL NOT NULL,
         feerecord_status TEXT NOT NULL,
-        feerecord_timecreated DATETIME NOT NULL
+        feerecord_timecreated DATETIME NOT NULL,
+        FOREIGN KEY (parent_id) REFERENCES parent (parent_id) ON DELETE SET NULL ON UPDATE CASCADE
         )''')
-
-    #parent table
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS parent (
-    parent_id TEXT PRIMARY KEY,
-    feerecord_id INTEGER,
-    parent_name TEXT NOT NULL,
-    parent_contactnum TEXT NOT NULL,
-    parent_username TEXT NOT NULL,
-    parent_password TEXT NOT NULL,
-    FOREIGN KEY (feerecord_id) REFERENCES feerecord (feerecord_id) ON DELETE SET NULL ON UPDATE CASCADE
-    )''')
 
     conn.commit()
     conn.close()

@@ -111,6 +111,7 @@ class Login(ctk.CTkFrame):
             else:
                 messagebox.showerror("ERROR", "Incorrect password. Please Try Again.")
                 self.password_field.delete(0, 'end')
+                self.controller.frame["Parent"].create_frame_for_parent()
                 return
 
         else:

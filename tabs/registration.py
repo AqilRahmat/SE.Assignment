@@ -93,11 +93,14 @@ class Register(ctk.CTkFrame):
 
     # Insert user into database
     def insert_new_user(self):
-        dbfunction.insert_into_parentdatabase(self.icinput_field.get(), 'NULL', self.nameinput_field.get(), self.phoneinput_field.get(), self.usernameinput_field.get(), self.password_field.get())
+        dbfunction.insert_into_parentdatabase(self.icinput_field.get(), self.nameinput_field.get(), self.phoneinput_field.get(), self.usernameinput_field.get(), self.password_field.get())
 
     #registration success/fail popup
     def validate_inserted(self):
         exist = dbfunction.fetch_entry('parent_id', "parent", "parent_id", self.icinput_field.get())
+
+        if (self.icinput_field.get() == "" or self.nameinput_field.get() == "" or self.usernameinput_field.get() == "" or self.password_field.get() == ""):
+            messagebox.showerror("Error", "Please fill all fields")
         if exist:
             messagebox.showinfo("ERROR", "Registration Failed! This IC number has already been registered. Please Try Again.")
             self.clear_fields()
@@ -106,6 +109,9 @@ class Register(ctk.CTkFrame):
             self.insert_new_user()
             messagebox.showinfo("SUCCESS", "Registration Successful!")
             self.clear_fields()
+
+            #refresh the accountant page
+            self.controller.frames["Account"].update_parent_combobox()
             self.controller.show_frame("Login")
 
     # Clear text fields

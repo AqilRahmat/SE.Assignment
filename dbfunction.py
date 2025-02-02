@@ -43,14 +43,14 @@ def fetch_entry(column, table, condition_column, condition_value):
     return result[0] if result else None
 
 #Insert into parent table
-def insert_into_parentdatabase(parentid, feeid, name, contact, user, password):
+def insert_into_parentdatabase(parentid, name, contact, user, password):
     conn = sqlite3.connect("CeriaPay.db")
     c = conn.cursor()
 
     c.execute('''
-    INSERT INTO parent (parent_id, feerecord_id, parent_name, parent_contactnum, parent_username, parent_password)
-    VALUES(?,?,?,?,?,?)
-    ''', (parentid, feeid, name, contact, user, password))
+    INSERT INTO parent (parent_id, parent_name, parent_contactnum, parent_username, parent_password)
+    VALUES(?,?,?,?,?)
+    ''', (parentid, name, contact, user, password))
 
     conn.commit()
     conn.close()
@@ -82,7 +82,7 @@ def insert_into_accountantdatabase(id, name, num, user, password):
     conn.close()
 
 #insert into feerecord table
-def insert_into_feerecorddatabase(id, amount, status):
+def insert_into_feerecorddatabase(id, parent_id, amount, status):
     from datetime import datetime
     from dateutil.relativedelta import relativedelta
 
@@ -96,9 +96,9 @@ def insert_into_feerecorddatabase(id, amount, status):
     c = conn.cursor()
 
     c.execute('''
-        INSERT INTO feerecord (feerecord_id, feerecord_duedate, feerecord_amount, feerecord_status, feerecord_timecreated)
-        VALUES (?, ?, ?, ?, ?)
-        ''', (id, formatted_duedate, amount, status, formatted_time))
+        INSERT INTO feerecord (feerecord_id, parent_id, feerecord_duedate, feerecord_amount, feerecord_status, feerecord_timecreated)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (id, parent_id, formatted_duedate, amount, status, formatted_time))
 
     conn.commit()
     conn.close()

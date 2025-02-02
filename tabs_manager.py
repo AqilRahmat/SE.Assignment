@@ -21,6 +21,16 @@ class FrameManager:
         }
 
     def show_frame(self, name):
+        # Hide all frames
         for frame in self.frames.values():
             frame.pack_forget()
-        self.frames[name].pack(fill="both", expand=True)
+
+        # Show the selected frame
+        frame_to_show = self.frames[name]
+        frame_to_show.pack(fill="both", expand=True)
+
+        # Call populate_parent_tree only if the Parent frame is being shown
+        if name == "Parent":
+            frame_to_show.populate_parent_tree()
+        if name == "Account":
+            frame_to_show.populate_tree()
