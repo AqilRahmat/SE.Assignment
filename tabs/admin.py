@@ -24,11 +24,9 @@ class Admin(ctk.CTkFrame):
         # Tabs
         self.user_tab = self.tabview.add("Add/Remove User")
         self.parents_tab = self.tabview.add("View Parents")
-        self.payment_tab = self.tabview.add("Manage Payment")
 
         self.create_user_tab()
         self.create_parents_tab()
-        self.create_payment_tab()
 
         # Bottom Button Frame
         button_frame = ctk.CTkFrame(self)
@@ -40,8 +38,6 @@ class Admin(ctk.CTkFrame):
                       command=lambda: self.tabview.set("Add/Remove User")).pack(side="left", padx=5)
         ctk.CTkButton(button_frame, text="View Parents", width=160,
                       command=lambda: self.tabview.set("View Parents")).pack(side="left", padx=5)
-        ctk.CTkButton(button_frame, text="Manage Payment", width=160,
-                      command=lambda: self.tabview.set("Manage Payment")).pack(side="left", padx=5)
 
         # Exit Button
         exit_button = ctk.CTkButton(self, text="Exit", width=160, command=lambda: self.controller.show_frame("Testing"))
@@ -187,11 +183,94 @@ class Admin(ctk.CTkFrame):
     def create_parents_tab(self):
         """Tab for viewing parents."""
         ctk.CTkLabel(self.parents_tab, text="Parents Information", font=("Arial", 14)).pack(pady=10)
-        ctk.CTkButton(self.parents_tab, text="View Parents", width=160).pack(pady=5)
 
-    def create_payment_tab(self):
-        """Tab for managing payments."""
-        ctk.CTkLabel(self.payment_tab, text="Payment Management", font=("Arial", 14)).pack(pady=10)
-        ctk.CTkButton(self.payment_tab, text="Manage Payment", width=160).pack(pady=5)
-        ctk.CTkButton(self.payment_tab, text="View Payment History", width=160).pack(pady=5)
-        ctk.CTkButton(self.payment_tab, text="View Fee Status", width=160).pack(pady=5)
+        # Frame for scrollable panel
+        parent_list_frame = ctk.CTkScrollableFrame(self.parents_tab, height=400)  # Set height for scrollable area
+        parent_list_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Header row for the table
+        header_frame = ctk.CTkFrame(parent_list_frame)
+        header_frame.pack(fill="x", padx=5, pady=5)
+
+        ctk.CTkLabel(header_frame, text="Parent ID", width=100, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                             column=0,
+                                                                                                             padx=5)
+        ctk.CTkLabel(header_frame, text="Parent Name", width=200, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                               column=1,
+                                                                                                               padx=5)
+        ctk.CTkLabel(header_frame, text="Contact Number", width=150, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                                  column=2,
+                                                                                                                  padx=5)
+        ctk.CTkLabel(header_frame, text="Username", width=150, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                            column=3,
+                                                                                                            padx=5)
+
+        # Add a horizontal line below the header
+        separator = ctk.CTkFrame(parent_list_frame, height=2, fg_color="gray")
+        separator.pack(fill="x", padx=5, pady=5)
+
+        def load_parents():
+            """Fetch and display all parents in the database."""
+            # Clear any existing widgets in the scrollable frame
+            for widget in parent_list_frame.winfo_children():
+                widget.destroy()
+
+            # Recreate the header row
+            header_frame = ctk.CTkFrame(parent_list_frame)
+            header_frame.pack(fill="x", padx=5, pady=2)
+            ctk.CTkLabel(header_frame, text="Parent ID", width=100, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                                 column=0,
+                                                                                                                 padx=5)
+            ctk.CTkLabel(header_frame, text="Parent Name", width=200, anchor="w", font=("Arial", 12, "bold")).grid(
+                row=0, column=1, padx=5)
+            ctk.CTkLabel(header_frame, text="Contact Number", width=150, anchor="w", font=("Arial", 12, "bold")).grid(
+                row=0, column=2, padx=5)
+            ctk.CTkLabel(header_frame, text="Username", width=150, anchor="w", font=("Arial", 12, "bold")).grid(row=0,
+                                                                                                                column=3,
+                                                                                                                padx=5)
+
+            # Add a horizontal line below the header
+            separator = ctk.CTkFrame(parent_list_frame, height=2, fg_color="gray")
+            separator.pack(fill="x", padx=5, pady=2)
+
+            try:
+                # Fetch parent data from the database
+                conn = sqlite3.connect("CeriaPay.db")
+                c = conn.cursor()
+                c.execute("SELECT parent_id, parent_name, parent_contactnum, parent_username FROM parent")
+                parents = c.fetchall()
+                conn.close()
+
+                if not parents:
+                    ctk.CTkLabel(parent_list_frame, text="No parents found.", font=("Arial", 12)).pack(pady=10)
+                else:
+                    # Display each parent's details in the scrollable frame
+                    for i, (parent_id, parent_name, parent_contactnum, parent_username) in enumerate(parents):
+                        row_frame = ctk.CTkFrame(parent_list_frame, corner_radius=5)
+                        row_frame.pack(fill="x", padx=5, pady=2)
+
+                        # Display parent details in columns
+                        ctk.CTkLabel(row_frame, text=parent_id, width=100, anchor="w", font=("Arial", 11)).grid(row=0,
+                                                                                                                column=0,
+                                                                                                                padx=5)
+                        ctk.CTkLabel(row_frame, text=parent_name, width=200, anchor="w", font=("Arial", 11)).grid(row=0,
+                                                                                                                  column=1,
+                                                                                                                  padx=5)
+                        ctk.CTkLabel(row_frame, text=parent_contactnum, width=150, anchor="w", font=("Arial", 11)).grid(
+                            row=0, column=2, padx=5)
+                        ctk.CTkLabel(row_frame, text=parent_username, width=150, anchor="w", font=("Arial", 11)).grid(
+                            row=0, column=3, padx=5)
+
+                        # Add a horizontal line between rows
+                        separator = ctk.CTkFrame(parent_list_frame, height=1, fg_color="lightgray")
+                        separator.pack(fill="x", padx=5, pady=2)
+
+            except Exception as e:
+                ctk.CTkLabel(parent_list_frame, text=f"Error loading parents: {str(e)}", text_color="red").pack(pady=10)
+
+        # Load parents when the tab is created
+        load_parents()
+
+        # Add a refresh button to reload the parent list
+        refresh_button = ctk.CTkButton(self.parents_tab, text="Refresh List", command=load_parents)
+        refresh_button.pack(pady=10)
