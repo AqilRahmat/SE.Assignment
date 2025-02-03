@@ -1,21 +1,197 @@
-#TODO: Admin can add/remove teacher & accountant account
-#TODO: Can view parents information
-#TODO: Can view & manage (update payment), view payment history view fee status
-
 import customtkinter as ctk
+import sqlite3
+import dbfunction
 import navbar
+from tkinter import StringVar
+
 
 class Admin(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
 
-
+        # Navbar
         navbar.nav(self)
 
-        label = ctk.CTkLabel(self, text="Admin Frame")
-        label.pack(pady=20)
+        # Admin Frame Label
+        label = ctk.CTkLabel(self, text="Admin Frame", font=("Arial", 16))
+        label.pack(pady=(10, 5))
 
-        button = ctk.CTkButton(self, text="Exit",
-                               command=lambda: self.controller.show_frame("Testing"))
-        button.pack(pady=10)
+        # Tab View
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # Tabs
+        self.user_tab = self.tabview.add("Add/Remove User")
+        self.parents_tab = self.tabview.add("View Parents")
+        self.payment_tab = self.tabview.add("Manage Payment")
+
+        self.create_user_tab()
+        self.create_parents_tab()
+        self.create_payment_tab()
+
+        # Bottom Button Frame
+        button_frame = ctk.CTkFrame(self)
+        button_frame.pack(pady=10)
+
+        ctk.CTkButton(button_frame, text="Add User", width=160,
+                      command=lambda: self.tabview.set("Add/Remove User")).pack(side="left", padx=5)
+        ctk.CTkButton(button_frame, text="Remove User", width=160,
+                      command=lambda: self.tabview.set("Add/Remove User")).pack(side="left", padx=5)
+        ctk.CTkButton(button_frame, text="View Parents", width=160,
+                      command=lambda: self.tabview.set("View Parents")).pack(side="left", padx=5)
+        ctk.CTkButton(button_frame, text="Manage Payment", width=160,
+                      command=lambda: self.tabview.set("Manage Payment")).pack(side="left", padx=5)
+
+        # Exit Button
+        exit_button = ctk.CTkButton(self, text="Exit", width=160, command=lambda: self.controller.show_frame("Testing"))
+        exit_button.pack(pady=(10, 15))
+
+    def create_user_tab(self):
+        """Tab for Add/Remove User."""
+        ctk.CTkLabel(self.user_tab, text="User Management", font=("Arial", 14)).pack(pady=10)
+
+        # Add User Section
+        add_user_frame = ctk.CTkFrame(self.user_tab, corner_radius=10)
+        add_user_frame.pack(fill="x", padx=10, pady=10)
+
+        ctk.CTkLabel(add_user_frame, text="Add New User", font=("Arial", 12)).pack(pady=5)
+
+        user_id_entry = ctk.CTkEntry(add_user_frame, placeholder_text="User ID")
+        user_id_entry.pack(pady=5)
+        user_name_entry = ctk.CTkEntry(add_user_frame, placeholder_text="User Name")
+        user_name_entry.pack(pady=5)
+        user_contact_entry = ctk.CTkEntry(add_user_frame, placeholder_text="Contact Number")
+        user_contact_entry.pack(pady=5)
+        user_username_entry = ctk.CTkEntry(add_user_frame, placeholder_text="Username")
+        user_username_entry.pack(pady=5)
+        user_password_entry = ctk.CTkEntry(add_user_frame, placeholder_text="Password", show="*")
+        user_password_entry.pack(pady=5)
+
+        # Combobox for selecting user type
+        user_type_var = StringVar()
+        user_type_combobox = ctk.CTkComboBox(add_user_frame, values=["Admin", "Accountant"], variable=user_type_var)
+        user_type_combobox.set("Admin")  # Default selection
+        user_type_combobox.pack(pady=5)
+
+        # Label for feedback (success or error messages)
+        feedback_label = ctk.CTkLabel(add_user_frame, text="", font=("Arial", 10))
+        feedback_label.pack(pady=5)
+
+        def add_user():
+            user_id = user_id_entry.get()
+            user_name = user_name_entry.get()
+            user_contactnum = user_contact_entry.get()  # Updated variable name
+            user_username = user_username_entry.get()
+            user_password = user_password_entry.get()
+            user_type = user_type_var.get()
+
+            if not all([user_id, user_name, user_contactnum, user_username, user_password]):  # Also updated here
+                feedback_label.configure(text="All fields are required!", text_color="red")
+                return
+
+            try:
+                conn = sqlite3.connect("CeriaPay.db")
+                c = conn.cursor()
+
+                # Check if the user ID already exists
+                if user_type == "Admin":
+                    c.execute("SELECT admin_id FROM administrator WHERE admin_id = ?", (user_id,))
+                elif user_type == "Accountant":
+                    c.execute("SELECT accountant_id FROM accountant WHERE accountant_id = ?", (user_id,))
+
+                if c.fetchone():
+                    feedback_label.configure(
+                        text=f"{user_type} ID {user_id} already exists!", text_color="red"
+                    )
+                else:
+                    # Insert into the appropriate table
+                    if user_type == "Admin":
+                        dbfunction.insert_into_admindatabase(
+                            user_id, user_name, user_contactnum, user_username, user_password  # Updated here
+                        )
+                    elif user_type == "Accountant":
+                        dbfunction.insert_into_accountantdatabase(
+                            user_id, user_name, user_contactnum, user_username, user_password  # Updated here
+                        )
+                    feedback_label.configure(text="User added successfully!", text_color="green")
+                    user_id_entry.delete(0, "end")
+                    user_name_entry.delete(0, "end")
+                    user_contact_entry.delete(0, "end")
+                    user_username_entry.delete(0, "end")
+                    user_password_entry.delete(0, "end")
+                    load_users()  # Refresh the user list
+
+                conn.close()
+            except Exception as e:
+                feedback_label.configure(
+                    text=f"Error: {str(e)}", text_color="red"
+                )
+
+        ctk.CTkButton(add_user_frame, text="Add User", command=add_user).pack(pady=10)
+
+        # Remove User Section
+        remove_user_frame = ctk.CTkFrame(self.user_tab, corner_radius=10)
+        remove_user_frame.pack(fill="both", expand=True, padx=10, pady=10)  # Allow this section to expand dynamically
+
+        ctk.CTkLabel(remove_user_frame, text="Remove User", font=("Arial", 12)).pack(pady=5)
+
+        user_list_frame = ctk.CTkScrollableFrame(remove_user_frame)
+        user_list_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        def load_users():
+            for widget in user_list_frame.winfo_children():
+                widget.destroy()
+
+            conn = sqlite3.connect("CeriaPay.db")
+            c = conn.cursor()
+            c.execute("SELECT admin_id, admin_name FROM administrator")
+            admins = c.fetchall()
+            c.execute("SELECT accountant_id, accountant_name FROM accountant")
+            accountants = c.fetchall()
+            conn.close()
+
+            if not admins and not accountants:
+                ctk.CTkLabel(user_list_frame, text="No users found").pack()
+            else:
+                for user_id, user_name in admins:
+                    user_frame = ctk.CTkFrame(user_list_frame, corner_radius=5)
+                    user_frame.pack(fill="x", padx=5, pady=5)
+
+                    ctk.CTkLabel(user_frame, text=f"Admin: {user_name} ({user_id})").pack(side="left", padx=10)
+
+                    def remove_user(admin_id=user_id, user_type="Admin"):
+                        dbfunction.remove_entry("administrator", "admin_id", admin_id)
+                        feedback_label.configure(text=f"Admin {admin_id} removed!", text_color="green")
+                        load_users()
+
+                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right",
+                                                                                                       padx=10)
+
+                for user_id, user_name in accountants:
+                    user_frame = ctk.CTkFrame(user_list_frame, corner_radius=5)
+                    user_frame.pack(fill="x", padx=5, pady=5)
+
+                    ctk.CTkLabel(user_frame, text=f"Accountant: {user_name} ({user_id})").pack(side="left", padx=10)
+
+                    def remove_user(accountant_id=user_id, user_type="Accountant"):
+                        dbfunction.remove_entry("accountant", "accountant_id", accountant_id)
+                        feedback_label.configure(text=f"Accountant {accountant_id} removed!", text_color="green")
+                        load_users()
+
+                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right",
+                                                                                                       padx=10)
+
+        load_users()
+
+    def create_parents_tab(self):
+        """Tab for viewing parents."""
+        ctk.CTkLabel(self.parents_tab, text="Parents Information", font=("Arial", 14)).pack(pady=10)
+        ctk.CTkButton(self.parents_tab, text="View Parents", width=160).pack(pady=5)
+
+    def create_payment_tab(self):
+        """Tab for managing payments."""
+        ctk.CTkLabel(self.payment_tab, text="Payment Management", font=("Arial", 14)).pack(pady=10)
+        ctk.CTkButton(self.payment_tab, text="Manage Payment", width=160).pack(pady=5)
+        ctk.CTkButton(self.payment_tab, text="View Payment History", width=160).pack(pady=5)
+        ctk.CTkButton(self.payment_tab, text="View Fee Status", width=160).pack(pady=5)

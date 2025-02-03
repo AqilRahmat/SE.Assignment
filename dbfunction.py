@@ -56,17 +56,17 @@ def insert_into_parentdatabase(parentid, name, contact, user, password):
     conn.close()
 
 #insert into admin (this is for admin only)
-def insert_into_admindatabase(id, name, num, user, password):
+def insert_into_admindatabase(admin_id, admin_name, admin_contactnum, admin_username, admin_password):
     conn = sqlite3.connect("CeriaPay.db")
-    c = conn.cursor()
-
-    c.execute('''
-    INSERT INTO administrator (admin_id, admin_name, admin_contactnum, admin_username, admin_password)
-    VALUES(?,?,?,?,?)
-    ''', (id, name, num, user, password))
-
-    conn.commit()
-    conn.close()
+    try:
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO administrator (admin_id, admin_name, admin_contactnum, admin_username, admin_password)
+            VALUES (?, ?, ?, ?, ?)
+        """, (admin_id, admin_name, admin_contactnum, admin_username, admin_password))
+        conn.commit()
+    finally:
+        conn.close()  # Always close the connection
 
 #insert into accountant table (this is for admin only)
 def insert_into_accountantdatabase(id, name, num, user, password):
