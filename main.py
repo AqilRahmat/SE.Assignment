@@ -11,9 +11,11 @@ database.create_table()
 class MyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+        self.iconbitmap('Img/CERIAPAY_WINDOWICON.ico')
+        self._set_appearance_mode('light')
         self.geometry('1280x720')
         self.title("CeriaPay")
-        self.resizable(width=True, height=True)
+        self.resizable(width=False, height=False)
 
         self.frame_manager = FrameManager(self)
         self.frame_manager.show_frame("Testing")

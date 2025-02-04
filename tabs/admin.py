@@ -22,36 +22,20 @@ class Admin(ctk.CTkFrame):
         self.tabview.pack(fill="both", expand=True, padx=20, pady=10)
 
         # Tabs
-        self.user_tab = self.tabview.add("Add/Remove User")
+        self.add_user_tab = self.tabview.add("Add User")
+        self.remove_user_tab = self.tabview.add("Remove User")
         self.parents_tab = self.tabview.add("View Parents")
 
-        self.create_user_tab()
+        self.create_add_user_tab()
+        self.create_remove_user_tab()
         self.create_parents_tab()
 
-        # Bottom Button Frame
-        button_frame = ctk.CTkFrame(self)
-        button_frame.pack(pady=10)
+    def create_add_user_tab(self):
+        """Tab for Adding a User."""
+        ctk.CTkLabel(self.add_user_tab, text="Add New User", font=("Arial", 14)).pack(pady=10)
 
-        ctk.CTkButton(button_frame, text="Add User", width=160,
-                      command=lambda: self.tabview.set("Add/Remove User")).pack(side="left", padx=5)
-        ctk.CTkButton(button_frame, text="Remove User", width=160,
-                      command=lambda: self.tabview.set("Add/Remove User")).pack(side="left", padx=5)
-        ctk.CTkButton(button_frame, text="View Parents", width=160,
-                      command=lambda: self.tabview.set("View Parents")).pack(side="left", padx=5)
-
-        # Exit Button
-        exit_button = ctk.CTkButton(self, text="Exit", width=160, command=lambda: self.controller.show_frame("Testing"))
-        exit_button.pack(pady=(10, 15))
-
-    def create_user_tab(self):
-        """Tab for Add/Remove User."""
-        ctk.CTkLabel(self.user_tab, text="User Management", font=("Arial", 14)).pack(pady=10)
-
-        # Add User Section
-        add_user_frame = ctk.CTkFrame(self.user_tab, corner_radius=10)
+        add_user_frame = ctk.CTkFrame(self.add_user_tab, corner_radius=10)
         add_user_frame.pack(fill="x", padx=10, pady=10)
-
-        ctk.CTkLabel(add_user_frame, text="Add New User", font=("Arial", 12)).pack(pady=5)
 
         user_id_entry = ctk.CTkEntry(add_user_frame, placeholder_text="User ID")
         user_id_entry.pack(pady=5)
@@ -64,25 +48,23 @@ class Admin(ctk.CTkFrame):
         user_password_entry = ctk.CTkEntry(add_user_frame, placeholder_text="Password", show="*")
         user_password_entry.pack(pady=5)
 
-        # Combobox for selecting user type
         user_type_var = StringVar()
         user_type_combobox = ctk.CTkComboBox(add_user_frame, values=["Admin", "Accountant"], variable=user_type_var)
         user_type_combobox.set("Admin")  # Default selection
         user_type_combobox.pack(pady=5)
 
-        # Label for feedback (success or error messages)
         feedback_label = ctk.CTkLabel(add_user_frame, text="", font=("Arial", 10))
         feedback_label.pack(pady=5)
 
         def add_user():
             user_id = user_id_entry.get()
             user_name = user_name_entry.get()
-            user_contactnum = user_contact_entry.get()  # Updated variable name
+            user_contactnum = user_contact_entry.get()
             user_username = user_username_entry.get()
             user_password = user_password_entry.get()
             user_type = user_type_var.get()
 
-            if not all([user_id, user_name, user_contactnum, user_username, user_password]):  # Also updated here
+            if not all([user_id, user_name, user_contactnum, user_username, user_password]):
                 feedback_label.configure(text="All fields are required!", text_color="red")
                 return
 
@@ -104,11 +86,11 @@ class Admin(ctk.CTkFrame):
                     # Insert into the appropriate table
                     if user_type == "Admin":
                         dbfunction.insert_into_admindatabase(
-                            user_id, user_name, user_contactnum, user_username, user_password  # Updated here
+                            user_id, user_name, user_contactnum, user_username, user_password
                         )
                     elif user_type == "Accountant":
                         dbfunction.insert_into_accountantdatabase(
-                            user_id, user_name, user_contactnum, user_username, user_password  # Updated here
+                            user_id, user_name, user_contactnum, user_username, user_password
                         )
                     feedback_label.configure(text="User added successfully!", text_color="green")
                     user_id_entry.delete(0, "end")
@@ -116,9 +98,7 @@ class Admin(ctk.CTkFrame):
                     user_contact_entry.delete(0, "end")
                     user_username_entry.delete(0, "end")
                     user_password_entry.delete(0, "end")
-                    load_users()  # Refresh the user list
 
-                conn.close()
             except Exception as e:
                 feedback_label.configure(
                     text=f"Error: {str(e)}", text_color="red"
@@ -126,14 +106,15 @@ class Admin(ctk.CTkFrame):
 
         ctk.CTkButton(add_user_frame, text="Add User", command=add_user).pack(pady=10)
 
-        # Remove User Section
-        remove_user_frame = ctk.CTkFrame(self.user_tab, corner_radius=10)
-        remove_user_frame.pack(fill="both", expand=True, padx=10, pady=10)  # Allow this section to expand dynamically
+    def create_remove_user_tab(self):
+        """Tab for Removing a User."""
+        ctk.CTkLabel(self.remove_user_tab, text="Remove User", font=("Arial", 14)).pack(pady=10)
 
-        ctk.CTkLabel(remove_user_frame, text="Remove User", font=("Arial", 12)).pack(pady=5)
-
-        user_list_frame = ctk.CTkScrollableFrame(remove_user_frame)
+        user_list_frame = ctk.CTkScrollableFrame(self.remove_user_tab)
         user_list_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        feedback_label = ctk.CTkLabel(self.remove_user_tab, text="", font=("Arial", 10))
+        feedback_label.pack(pady=5)
 
         def load_users():
             for widget in user_list_frame.winfo_children():
@@ -156,13 +137,12 @@ class Admin(ctk.CTkFrame):
 
                     ctk.CTkLabel(user_frame, text=f"Admin: {user_name} ({user_id})").pack(side="left", padx=10)
 
-                    def remove_user(admin_id=user_id, user_type="Admin"):
+                    def remove_user(admin_id=user_id):
                         dbfunction.remove_entry("administrator", "admin_id", admin_id)
                         feedback_label.configure(text=f"Admin {admin_id} removed!", text_color="green")
                         load_users()
 
-                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right",
-                                                                                                       padx=10)
+                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right", padx=10)
 
                 for user_id, user_name in accountants:
                     user_frame = ctk.CTkFrame(user_list_frame, corner_radius=5)
@@ -170,13 +150,12 @@ class Admin(ctk.CTkFrame):
 
                     ctk.CTkLabel(user_frame, text=f"Accountant: {user_name} ({user_id})").pack(side="left", padx=10)
 
-                    def remove_user(accountant_id=user_id, user_type="Accountant"):
+                    def remove_user(accountant_id=user_id):
                         dbfunction.remove_entry("accountant", "accountant_id", accountant_id)
                         feedback_label.configure(text=f"Accountant {accountant_id} removed!", text_color="green")
                         load_users()
 
-                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right",
-                                                                                                       padx=10)
+                    ctk.CTkButton(user_frame, text="Remove", fg_color="red", command=remove_user).pack(side="right", padx=10)
 
         load_users()
 

@@ -15,13 +15,13 @@ class Parent(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        ctk.set_appearance_mode("light")  # Light mode for pastel colors
 
         navbar.parent_nav(self)
 
-        self.scrollable_frame = ctk.CTkScrollableFrame(self)
+        self.scrollable_frame = ctk.CTkScrollableFrame(self, fg_color="#F8F9FA")  # Soft gray background
         self.scrollable_frame.pack(fill="both", expand="yes")
 
-        #creating a frame
         self.fees_frame()
         self.history_frame()
         self.create_frame_for_parent()
@@ -30,60 +30,35 @@ class Parent(ctk.CTkFrame):
     def create_frame_for_parent(self):
         self.populate_parent_tree()
         self.update_all_labels()
-        self.amount_number.update_idletasks()
-        self.duedate_time.update_idletasks()
 
     def fees_frame(self):
-        #get values for payment frame
         self.get_payment_frame_values()
 
-        # Create fees frame with padding and background color
-        fees_frame = ctk.CTkFrame(self.scrollable_frame,
-                                  fg_color="#f0f0f0",
-                                  border_width=2,
-                                  border_color="#d1d1d1",
-                                  corner_radius=10)
-        fees_frame.pack(fill='x', pady=10, padx=15, expand=True)
+        fees_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="#EDE7F6", corner_radius=15, border_width=1, border_color="#BDBDBD")  # Light Lavender
+        fees_frame.pack(fill='x', pady=15, padx=20, expand=True)
 
-        # Amount frame (left side) with padding
-        amount_frame = ctk.CTkFrame(fees_frame,
-                                    fg_color="#ffffff",
-                                    corner_radius=10)
-        amount_frame.pack(side='left', fill='both', expand=True, padx=10, pady=5)  # Add padding around frame
+        amount_frame = ctk.CTkFrame(fees_frame, fg_color="#EDE7F6", corner_radius=15)  # Light Pink
+        amount_frame.pack(side='left', fill='both', expand=True, padx=15, pady=10)
 
-        amount_label = ctk.CTkLabel(amount_frame,
-                                    text="AMOUNT",
-                                    font=("Arial", 14, "bold"),
-                                    text_color="black")
-        amount_label.pack(fill='x', pady=5)  # Make label fill horizontally
+        amount_label = ctk.CTkLabel(amount_frame, text="AMOUNT", font=("Arial", 16, "bold"), text_color="#4A4E69")  # Muted Navy
+        amount_label.pack(pady=5)
 
-        self.amount_number = ctk.CTkLabel(amount_frame,
-                                     text=self.amount_owed,
-                                     font=("Arial", 12),
-                                     text_color="black")
-        self.amount_number.pack(fill='x', pady=5)  # Make label fill horizontally
+        self.amount_number = ctk.CTkLabel(amount_frame, text=self.amount_owed, font=("Arial", 14), text_color="#4A4E69")
+        self.amount_number.pack()
 
-        # Due date frame (right side) with padding
-        duedate_frame = ctk.CTkFrame(fees_frame,
-                                     fg_color="#ffffff",
-                                     corner_radius=10)
-        duedate_frame.pack(side='left', fill='both', expand=True, padx=10, pady=5)  # Add padding around frame
+        duedate_frame = ctk.CTkFrame(fees_frame, fg_color="#EDE7F6", corner_radius=15)
+        duedate_frame.pack(side='left', fill='both', expand=True, padx=15, pady=10)
 
-        duedate_label = ctk.CTkLabel(duedate_frame,
-                                     text="DATE DUE",
-                                     font=("Arial", 14, "bold"),
-                                     text_color="black")
-        duedate_label.pack(fill='x', pady=5)  # Make label fill horizontally
+        duedate_label = ctk.CTkLabel(duedate_frame, text="DATE DUE", font=("Arial", 16, "bold"), text_color="#4A4E69")
+        duedate_label.pack(pady=5)
 
-        self.duedate_time = ctk.CTkLabel(duedate_frame,
-                                    text=self.duedate_actual,
-                                    font=("Arial", 12),
-                                    text_color="black")
-        self.duedate_time.pack(fill='x', pady=5)  # Make label fill horizontally
+        self.duedate_time = ctk.CTkLabel(duedate_frame, text=self.duedate_actual, font=("Arial", 14), text_color="#4A4E69")
+        self.duedate_time.pack()
 
-        # Payment button placed at the bottom of the fees_frame, aligned right
-        payment_button = ctk.CTkButton(fees_frame, text="Make Payment", command=self.payment_window)
-        payment_button.pack(side="left", fill='both', padx=10, pady=10)
+        payment_button = ctk.CTkButton(fees_frame, text="Make Payment", font=("Arial", 14, "bold"), corner_radius=10,
+                                       fg_color="#A2D2FF", hover_color="#BDE0FE", text_color="black",
+                                       command=self.payment_window)
+        payment_button.pack(side="left", fill='both', padx=15, pady=10)
 
     def get_payment_frame_values(self):
         self.duedate_actual = self.get_due_date()
@@ -124,28 +99,24 @@ class Parent(ctk.CTkFrame):
 
 
     def history_frame(self):
-        table_frame = ctk.CTkFrame(self.scrollable_frame,
-                                   fg_color="#f0f0f0",
-                                   border_width=2,
-                                   border_color="#d1d1d1",
-                                   corner_radius=15)
-        table_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        table_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="#EDE7F6", border_width=1, border_color="#BDBDBD", corner_radius=15)
+        table_frame.pack(fill="both", expand=True, padx=15, pady=10)
+
+        label = ctk.CTkLabel(table_frame, text="Payment History", font=("Arial", 18, "bold"), text_color="#4A4E69")
+        label.pack(pady=10)
 
         self.tree = ttk.Treeview(table_frame, columns=("id", "date", "amount", "status"), show="headings")
 
-        # Define column headings
         self.tree.heading("id", text="ID")
         self.tree.heading("date", text="Due Date")
         self.tree.heading("amount", text="Amount")
         self.tree.heading("status", text="Status")
 
-        # Define column widths
         self.tree.column("id", width=50, anchor="center")
         self.tree.column("date", width=100, anchor="center")
         self.tree.column("amount", width=100, anchor="center")
         self.tree.column("status", width=150, anchor="center")
 
-        # Add a vertical scrollbar for the table
         scrollbar = ctk.CTkScrollbar(table_frame, command=self.tree.yview)
         scrollbar.pack(side="right", fill="y")
         self.tree.configure(yscrollcommand=scrollbar.set)
@@ -169,39 +140,36 @@ class Parent(ctk.CTkFrame):
         payment.attributes("-topmost", True)
 
         payment.title("Payment")
-        payment.geometry("500x500")
+        payment.geometry("400x400")
 
-        label = ctk.CTkLabel(payment, text="Payment")
-        label.pack()
+        ctk.CTkLabel(payment, text="Make a Payment", font=("Arial", 18, "bold"), text_color="#4A4E69").pack(pady=15)
 
-        #label and entry for record id
-        id_label = ctk.CTkLabel(payment, text="ID")
-        id_label.pack(pady=10)
+        id_label = ctk.CTkLabel(payment, text="Record ID:", font=("Arial", 14))
+        id_label.pack(pady=5)
         self.id_entry = ctk.CTkEntry(payment)
-        self.id_entry.pack(pady=10)
+        self.id_entry.pack(pady=5)
 
-        #label and entry for amount
-        amount_label = ctk.CTkLabel(payment, text="Amount")
-        amount_label.pack(pady=10)
+        amount_label = ctk.CTkLabel(payment, text="Amount:", font=("Arial", 14))
+        amount_label.pack(pady=5)
         self.amount_entry = ctk.CTkEntry(payment)
-        self.amount_entry.pack(pady=10)
+        self.amount_entry.pack(pady=5)
 
-        #payment method selection
         self.payment_method = ctk.StringVar()
         self.payment_method.set("Credit Card")
 
-        credit_card_button = ctk.CTkRadioButton(payment, text="Credit Card", variable=self.payment_method,value="Credit Card")
-        credit_card_button.pack(pady=5)
+        ctk.CTkLabel(payment, text="Payment Method:", font=("Arial", 14)).pack(pady=5)
 
-        debit_button = ctk.CTkRadioButton(payment, text="Debit Card", variable=self.payment_method, value="Debit Card")
-        debit_button.pack(pady=5)
+        options_frame = ctk.CTkFrame(payment, fg_color="transparent")
+        options_frame.pack()
 
-        fpx_button = ctk.CTkRadioButton(payment, text="FPX", variable=self.payment_method, value="FPX")
-        fpx_button.pack(pady=5)
+        ctk.CTkRadioButton(options_frame, text="Credit Card", variable=self.payment_method, value="Credit Card").pack(side="left", padx=10)
+        ctk.CTkRadioButton(options_frame, text="Debit Card", variable=self.payment_method, value="Debit Card").pack(side="left", padx=10)
+        ctk.CTkRadioButton(options_frame, text="FPX", variable=self.payment_method, value="FPX").pack(side="left", padx=10)
 
-        # Submit button to process payment
-        submit_button = ctk.CTkButton(payment, text="Submit Payment", command=self.process_payment)
+        submit_button = ctk.CTkButton(payment, text="Submit Payment", fg_color="#FFAFCC", hover_color="#FDCFE8",
+                                      text_color="black", command=self.process_payment)
         submit_button.pack(pady=20)
+
 
     def process_payment(self):
         record_id = self.id_entry.get()
@@ -240,39 +208,31 @@ class Parent(ctk.CTkFrame):
         profile.attributes("-topmost", True)
 
         profile.title("User Profile")
-        profile.geometry("500x500")
+        profile.geometry("400x400")
 
-        label = ctk.CTkLabel(profile, text="User Profile")
-        label.pack()
+        ctk.CTkLabel(profile, text="User Profile", font=("Arial", 18, "bold"), text_color="#4A4E69").pack(pady=15)
 
-        # Username Label
-        username = Login.username_for_profile
-        username_label = ctk.CTkLabel(profile, text=username)
-        username_label.pack()
+        username_label = ctk.CTkLabel(profile, text=f"Username: {Login.username_for_profile}", font=("Arial", 14))
+        username_label.pack(pady=5)
 
-        # contact num change
-        number_label = ctk.CTkLabel(profile, text="Phone Number")
-        number_label.pack(pady=5, padx=5)
+        number_label = ctk.CTkLabel(profile, text="Phone Number:", font=("Arial", 14))
+        number_label.pack(pady=5)
 
-        phonenum = Login.phonenum_for_profile
-        self.real_number_label = ctk.CTkLabel(profile, text=phonenum)
-        self.real_number_label.pack(pady=5, padx=5)
+        self.real_number_label = ctk.CTkLabel(profile, text=Login.phonenum_for_profile, font=("Arial", 14, "bold"))
+        self.real_number_label.pack(pady=5)
 
         self.number_change_field = ctk.CTkEntry(profile, placeholder_text="Insert new Number")
         self.number_change_field.pack(pady=5)
 
-        self.number_change_button = ctk.CTkButton(profile, text="Change Number", command=self.number_change)
-        self.number_change_button.pack(pady=5)
+        ctk.CTkButton(profile, text="Change Number", command=self.number_change, fg_color="#FFAFCC", hover_color="#FDCFE8", text_color='black').pack(pady=5)
 
-        #Password label & textfield to change
-        password_label = ctk.CTkLabel(profile, text="Password")
-        password_label.pack(pady=5, padx=5)
+        password_label = ctk.CTkLabel(profile, text="Password:", font=("Arial", 14))
+        password_label.pack(pady=5)
 
         self.password_change_field = ctk.CTkEntry(profile, show="*", placeholder_text="Insert New Password")
         self.password_change_field.pack(pady=5)
 
-        self.password_change_button = ctk.CTkButton(profile, text="Change Password", command=self.password_change)
-        self.password_change_button.pack(pady=5)
+        ctk.CTkButton(profile, text="Change Password", command=self.password_change, fg_color="#A2D2FF", hover_color="#BDE0FE", text_color='black').pack(pady=5)
 
     def password_change(self):
         new_password = self.password_change_field.get()

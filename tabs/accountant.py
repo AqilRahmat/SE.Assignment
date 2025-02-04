@@ -15,21 +15,22 @@ class Account(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        ctk.set_appearance_mode("light")  # Light mode for pastel theme
+        self.configure(fg_color="#F8F9FA")  # Seamless soft gray background
 
-        # Load navigation bar
         navbar.nav(self)
 
-        # Title label
-        self.label = ctk.CTkLabel(self, text="Accountant Page", font=("Arial", 20, "bold"))
+        self.label = ctk.CTkLabel(self, text="Accountant Page", font=("Arial", 20, "bold"), text_color="#4A4E69")
         self.label.pack(pady=15)
 
         # ---------------------- TABLE ----------------------------------------------------------------
-        table_frame = ctk.CTkFrame(self)
+        table_frame = ctk.CTkFrame(self, fg_color="#EDE7F6", border_width=1, border_color="#BDBDBD", corner_radius=15)
         table_frame.pack(pady=10, padx=20, fill="both", expand=True)
 
         self.tree = ttk.Treeview(table_frame,
                                  columns=("FeeID", "ParentID", "DueDate", "Amount", "Status", "CreatedTime"),
                                  show="headings")
+
         self.tree.heading("FeeID", text="Fee Record ID")
         self.tree.heading("ParentID", text="Parent ID")
         self.tree.heading("DueDate", text="Due Date")
@@ -43,16 +44,26 @@ class Account(ctk.CTkFrame):
         self.tree.column("Amount", width=100, anchor="center")
         self.tree.column("Status", width=100, anchor="center")
         self.tree.column("CreatedTime", width=160, anchor="center")
-        self.tree.pack(fill="both", expand=True)
 
-        self.tree.bind("<ButtonRelease-1>", self.select_record)  # Event binding for selecting a record
+        # Scrollbar
+        scrollbar = ctk.CTkScrollbar(table_frame, command=self.tree.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.tree.configure(yscrollcommand=scrollbar.set)
+
+        self.tree.pack(fill="both", expand=True)
+        self.tree.bind("<ButtonRelease-1>", self.select_record)
 
         # ---------------------- TABVIEW -------------------------------------------------------------------------------
-        tab_frame = ctk.CTkFrame(self)
-        tab_frame.pack(pady=10, padx=20, fill="both", expand=False)
+        tab_frame = ctk.CTkFrame(self, fg_color="#F8F9FA")  # Blends perfectly
+        tab_frame.pack(pady=10, padx=20, expand=False)
 
-        self.tabview = ctk.CTkTabview(tab_frame, width=500, height=220)  # Reduced size
-        self.tabview.pack(expand=False, padx=10, pady=5, fill="both")  # Adjusted padding for compact layout
+        self.tabview = ctk.CTkTabview(tab_frame, text_color='black', fg_color="#F8F9FA",
+                                      segmented_button_selected_color="#A2D2FF",
+                                      segmented_button_selected_hover_color="#BDE0FE",
+                                      segmented_button_fg_color='#FFAFCC',
+                                      segmented_button_unselected_color="#FFAFCC",
+                                      segmented_button_unselected_hover_color="#FF8AB3")
+        self.tabview.pack(expand=False, padx=10, pady=5, fill="both")
 
         self.manage_tab = self.tabview.add("📋 Manage Fee Record")
         self.update_tab = self.tabview.add("✏ Update Fee Record")
@@ -61,73 +72,97 @@ class Account(ctk.CTkFrame):
         self.parent_names = self.parent_box_values()
 
         # ---------------------- MANAGE FEE RECORD TAB -------------------------------------------------------------------
-        manage_grid = ctk.CTkFrame(self.manage_tab)
+        manage_grid = ctk.CTkFrame(self.manage_tab, fg_color="#EDE7F6", corner_radius=15)
         manage_grid.pack(pady=5, padx=10, fill="both", expand=True)
 
-        self.fee_id_label = ctk.CTkLabel(manage_grid, text="Fee ID:")
+        self.fee_id_label = ctk.CTkLabel(manage_grid, text="Fee ID:", text_color="#4A4E69")
         self.fee_id_label.grid(row=0, column=0, padx=5, pady=3, sticky="e")
-        self.fee_id_entry = ctk.CTkEntry(manage_grid, width=200)
+        self.fee_id_entry = ctk.CTkEntry(manage_grid, width=200, border_color='white')
         self.fee_id_entry.grid(row=0, column=1, padx=5, pady=3, sticky="w")
 
-        self.parent_id_label = ctk.CTkLabel(manage_grid, text="Parent:")
+        self.parent_id_label = ctk.CTkLabel(manage_grid, text="Parent:", text_color="#4A4E69")
         self.parent_id_label.grid(row=1, column=0, padx=5, pady=3, sticky="e")
-        self.parent_id_box = ctk.CTkComboBox(manage_grid, values=self.parent_names, width=200)
+        self.parent_id_box = ctk.CTkComboBox(manage_grid, values=self.parent_names, width=200, border_color='white')
         self.parent_id_box.set("Select Parent")
         self.parent_id_box.grid(row=1, column=1, padx=5, pady=3, sticky="w")
 
-        self.amount_label = ctk.CTkLabel(manage_grid, text="Amount (RM):")
+        self.amount_label = ctk.CTkLabel(manage_grid, text="Amount (RM):", text_color="#4A4E69")
         self.amount_label.grid(row=2, column=0, padx=5, pady=3, sticky="e")
-        self.amount_entry = ctk.CTkEntry(manage_grid, width=150)
+        self.amount_entry = ctk.CTkEntry(manage_grid, width=150, border_color='white')
         self.amount_entry.grid(row=2, column=1, padx=5, pady=3, sticky="w")
 
-        self.status_label = ctk.CTkLabel(manage_grid, text="Status:")
+        self.status_label = ctk.CTkLabel(manage_grid, text="Status:", text_color="#4A4E69")
         self.status_label.grid(row=3, column=0, padx=5, pady=3, sticky="e")
         self.status_var = ctk.StringVar(value="Pending")
-        self.status_menu = ctk.CTkComboBox(manage_grid, values=["Pending", "Paid"], variable=self.status_var, width=150)
+        self.status_menu = ctk.CTkComboBox(manage_grid, values=["Pending", "Paid"], variable=self.status_var, width=150, border_color='white')
         self.status_menu.grid(row=3, column=1, padx=5, pady=3, sticky="w")
 
         # New Frame for Buttons
-        button_frame = ctk.CTkFrame(manage_grid)
-        button_frame.grid(row=4, column=0, columnspan=2, pady=10, padx=5, sticky="ew")
+        # Button Frame (Centered)
+        button_frame = ctk.CTkFrame(manage_grid, fg_color="transparent")
+        button_frame.grid(row=4, column=0, columnspan=2, pady=10, padx=5, sticky="nsew")
 
-        self.add_button = ctk.CTkButton(button_frame, text="➕ Add Fee", command=self.add_fee, width=140)
-        self.add_button.pack(side="left", padx=10, pady=5, expand=True)
+        # Expand frame to allow centering
+        manage_grid.columnconfigure(0, weight=1)
+        manage_grid.columnconfigure(1, weight=1)
+        button_frame.columnconfigure(0, weight=1)
+        button_frame.columnconfigure(1, weight=1)
 
-        self.delete_button = ctk.CTkButton(button_frame, text="🗑 Delete Fee", command=self.delete_fee, width=140)
-        self.delete_button.pack(side="right", padx=10, pady=5, expand=True)
+        # Add Fee Button (Centered)
+        self.add_button = ctk.CTkButton(button_frame, text="➕ Add Fee", fg_color="#A2D2FF", hover_color="#BDE0FE",
+                                        text_color="#4A4E69", command=self.add_fee)
+        self.add_button.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
+
+        # Delete Fee Button (Centered)
+        self.delete_button = ctk.CTkButton(button_frame, text="🗑 Delete Fee", fg_color="#FFAFCC", hover_color="#FF8AB3",
+                                           text_color="#4A4E69", command=self.delete_fee)
+        self.delete_button.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
 
         # ---------------------- UPDATE FEE RECORD TAB --------------------------------------------------------------------------
-        update_grid = ctk.CTkFrame(self.update_tab)
+        update_grid = ctk.CTkFrame(self.update_tab, fg_color="#EDE7F6", corner_radius=15)
         update_grid.pack(pady=5, padx=10, fill="both", expand=True)
 
-        self.update_amount_label = ctk.CTkLabel(update_grid, text="New Amount:")
+        self.update_amount_label = ctk.CTkLabel(update_grid, text="New Amount:", text_color="#4A4E69")
         self.update_amount_label.grid(row=0, column=0, padx=5, pady=3, sticky="e")
-        self.update_amount_entry = ctk.CTkEntry(update_grid, width=150)
+        self.update_amount_entry = ctk.CTkEntry(update_grid, width=150, border_color='white')
         self.update_amount_entry.grid(row=0, column=1, padx=5, pady=3, sticky="w")
 
-        self.update_status_label = ctk.CTkLabel(update_grid, text="New Status:")
+        self.update_status_label = ctk.CTkLabel(update_grid, text="New Status:", text_color="#4A4E69")
         self.update_status_label.grid(row=1, column=0, padx=5, pady=3, sticky="e")
         self.update_status_var = ctk.StringVar(value="Pending")
         self.update_status_menu = ctk.CTkComboBox(update_grid, values=['Pending', 'Paid'],
-                                                  variable=self.update_status_var, width=150)
+                                                  variable=self.update_status_var, width=150, border_color='white')
         self.update_status_menu.grid(row=1, column=1, padx=5, pady=3, sticky="w")
 
-        self.update_button = ctk.CTkButton(update_grid, text="✏ Update", command=self.update_fee, width=100)
-        self.update_button.grid(row=2, column=1, padx=5, pady=5)
+        # Button Frame for Update Button
+        update_button_frame = ctk.CTkFrame(update_grid, fg_color="transparent")
+        update_button_frame.grid(row=2, column=0, columnspan=2, pady=10, padx=5, sticky="nsew")
+
+        # Expand the grid to make sure the button is centered
+        update_grid.columnconfigure(0, weight=1)
+        update_grid.columnconfigure(1, weight=1)
+        update_button_frame.columnconfigure(0, weight=1)
+
+        # Update Fee Button (Centered)
+        self.update_button = ctk.CTkButton(update_button_frame, text="✏ Update", fg_color="#A2D2FF",
+                                           hover_color="#BDE0FE",
+                                           text_color="#4A4E69", command=self.update_fee)
+        self.update_button.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
 
         # ---------------------- GENERATE INVOICE TAB ------------------------------------------------------------------------------
-        invoice_grid = ctk.CTkFrame(self.invoice_tab)
+        invoice_grid = ctk.CTkFrame(self.invoice_tab, fg_color="#EDE7F6", corner_radius=15)
         invoice_grid.pack(pady=5, padx=10, fill="both", expand=True)
 
         self.invoice_label = ctk.CTkLabel(invoice_grid, text="Select a record and generate an invoice",
-                                          font=("Arial", 12))
+                                          font=("Arial", 12), text_color="#4A4E69")
         self.invoice_label.pack(pady=5)
 
         self.generate_invoice_button = ctk.CTkButton(invoice_grid, text="📄 Generate Invoice",
-                                                     command=self.generate_invoice, width=180)
+                                                     fg_color="#A2D2FF", hover_color="#BDE0FE", text_color="#4A4E69",
+                                                     command=self.generate_invoice)
         self.generate_invoice_button.pack(pady=5)
 
-        self.populate_tree()  # Load table data
+        self.populate_tree()
 
     def parent_box_values(self):
         """Fetch parent names from the database."""
@@ -298,20 +333,10 @@ class Account(ctk.CTkFrame):
             messagebox.showerror("Error", "No fee record found.")
             return
 
-        fee_id = values[0]  # Fee Record ID
-        parent_name = values[1]  # Parent Name
-        due_date = values[2]  # Due Date
-        amount = values[3]  # Fee Amount
-        status = values[4]  # Payment Status
-        created_time = values[5]  # Time Created
-
-        # Ask user where to save the PDF file
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".pdf",
-            filetypes=[("PDF files", "*.pdf")],
-            title="Save Invoice As",
-            initialfile=f"Invoice_{fee_id}.pdf"
-        )
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf",
+                                                 filetypes=[("PDF files", "*.pdf")],
+                                                 title="Save Invoice As",
+                                                 initialfile=f"Invoice_{values[0]}.pdf")
 
         if file_path:
             c = canvas.Canvas(file_path, pagesize=letter)
@@ -319,16 +344,14 @@ class Account(ctk.CTkFrame):
             c.drawString(200, 750, "INVOICE")
             c.setFont("Helvetica", 14)
 
-            # Draw invoice details
-            c.drawString(100, 700, f"Invoice ID: {fee_id}")
-            c.drawString(100, 670, f"Parent Name: {parent_name}")
-            c.drawString(100, 640, f"Due Date: {due_date}")
-            c.drawString(100, 610, f"Amount: RM{amount}")
-            c.drawString(100, 580, f"Status: {status}")
-            c.drawString(100, 550, f"Created Time: {created_time}")
+            c.drawString(100, 700, f"Invoice ID: {values[0]}")
+            c.drawString(100, 670, f"Parent Name: {values[1]}")
+            c.drawString(100, 640, f"Due Date: {values[2]}")
+            c.drawString(100, 610, f"Amount: RM{values[3]}")
+            c.drawString(100, 580, f"Status: {values[4]}")
+            c.drawString(100, 550, f"Created Time: {values[5]}")
 
-            c.setFont("Helvetica-Bold", 12)
             c.drawString(100, 500, "Thank you for your payment!")
-
             c.save()
-            messagebox.showinfo("Success", f"Invoice generated successfully!")
+
+            messagebox.showinfo("Success", "Invoice generated successfully!")
