@@ -1,7 +1,7 @@
 #TODO: Can view fees, and make payment, can also view payment history
 #   GUI Done, just need to add functionality
 import sqlite3
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, PhotoImage
 import customtkinter as ctk
 
 import dbfunction
@@ -21,6 +21,9 @@ class Parent(ctk.CTkFrame):
 
         self.scrollable_frame = ctk.CTkScrollableFrame(self, fg_color="#F8F9FA")  # Soft gray background
         self.scrollable_frame.pack(fill="both", expand="yes")
+
+        self.label = ctk.CTkLabel(self.scrollable_frame, text="Parent Page", font=("Arial", 20, "bold"), text_color="#4A4E69")
+        self.label.pack(pady=15)
 
         self.fees_frame()
         self.history_frame()
@@ -65,38 +68,46 @@ class Parent(ctk.CTkFrame):
         self.amount_owed = self.get_amount_owed()
 
     def get_due_date(self):
+        id = Login.ic_for_profile
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
 
         c.execute(
-            "SELECT feerecord_duedate "
-            "FROM feerecord "
-            "WHERE feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending' "
-            "ORDER BY feerecord_timecreated ASC "
-            "LIMIT 1")
+            """SELECT feerecord_duedate 
+               FROM feerecord 
+               WHERE (feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending') 
+               AND parent_id = ? 
+               ORDER BY feerecord_timecreated ASC 
+               LIMIT 1""",
+            (id,)
+        )
 
         result = c.fetchone()
-
         c.close()
+        conn.close()
 
         return result[0] if result else "No Outstanding Invoice"
 
     def get_amount_owed(self):
+        id = Login.ic_for_profile
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
 
         c.execute(
-            "SELECT feerecord_amount "
-            "FROM feerecord "
-            "WHERE feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending' "
-            "ORDER BY feerecord_timecreated ASC LIMIT 1")
+            """SELECT feerecord_amount 
+               FROM feerecord 
+               WHERE (feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending') 
+               AND parent_id = ? 
+               ORDER BY feerecord_timecreated ASC 
+               LIMIT 1""",
+            (id,)
+        )
 
         result = c.fetchone()
-
         c.close()
+        conn.close()
 
         return result[0] if result else "0"
-
 
     def history_frame(self):
         table_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="#EDE7F6", border_width=1, border_color="#BDBDBD", corner_radius=15)
@@ -162,7 +173,7 @@ class Parent(ctk.CTkFrame):
         options_frame = ctk.CTkFrame(payment, fg_color="transparent")
         options_frame.pack()
 
-        ctk.CTkRadioButton(options_frame, text="Credit Card", variable=self.payment_method, value="Credit Card").pack(side="left", padx=10)
+        ctk.CTkRadioButton(options_frame, text="Credit Card", variable=self.payment_method, value="Credit Card").pack(side="left", padx=40)
         ctk.CTkRadioButton(options_frame, text="Debit Card", variable=self.payment_method, value="Debit Card").pack(side="left", padx=10)
         ctk.CTkRadioButton(options_frame, text="FPX", variable=self.payment_method, value="FPX").pack(side="left", padx=10)
 
@@ -170,10 +181,12 @@ class Parent(ctk.CTkFrame):
                                       text_color="black", command=self.process_payment)
         submit_button.pack(pady=20)
 
-
     def process_payment(self):
         record_id = self.id_entry.get()
         amount = self.amount_entry.get()
+
+        # Fetch the amount owed from the database
+        amount_owed = dbfunction.fetch_entry('feerecord_amount', 'feerecord', 'feerecord_id', record_id)
 
         # Validate the entries
         if not record_id or not amount:
@@ -181,12 +194,19 @@ class Parent(ctk.CTkFrame):
             return
 
         try:
-            amount = float(amount)
+            amount = float(amount)  # Convert user input to float
+            amount_owed = float(amount_owed) if amount_owed else 0  # Convert DB value to float
+
+            # Ensure entered amount is at least the amount owed
+            if amount < amount_owed:
+                messagebox.showerror("Error", "Amount must be equal to or greater than the amount owed.")
+                return
+
         except ValueError:
-            messagebox.showerror("Error", "Amount must be a number.")
+            messagebox.showerror("Error", "Amount must be a valid number.", parent=self)
             return
 
-        #if pass validation
+        # If validation passes, update the database and labels
         self.update_feerecord()
         self.update_all_labels()
 
@@ -206,6 +226,7 @@ class Parent(ctk.CTkFrame):
     def profile_window(self):
         profile = ctk.CTkToplevel()
         profile.attributes("-topmost", True)
+        profile.iconbitmap("Img/CERIAPAY_WINDOWICON.ico")
 
         profile.title("User Profile")
         profile.geometry("400x400")

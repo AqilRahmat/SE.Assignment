@@ -19,11 +19,6 @@ class Register(ctk.CTkFrame):
 
         self.register_new_account()
 
-        button = ctk.CTkButton(self, text="Exit",
-                               command=lambda: self.controller.show_frame("Testing"),
-                               fg_color="#FCE4EC", hover_color="#FF8AB3", font=("Arial Bold", 12), text_color="#4A4E69")
-        button.pack(pady=10)
-
     def register_new_account(self):
         name_icon = Image.open("Img/name_icon.png")
         ic_icon = Image.open("Img/ic_icon.png")

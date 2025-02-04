@@ -6,7 +6,6 @@ from tabs.admin import Admin
 from tabs.login import Login
 from tabs.parent import Parent
 from tabs.registration import Register
-from tabs.testing import Testing
 
 
 class FrameManager:
@@ -18,7 +17,6 @@ class FrameManager:
             "Parent" : Parent(self.root, self),
             "Account" : Account(self.root, self),
             "Register" : Register(self.root, self),
-            "Testing" : Testing(self.root, self),
         }
 
     def show_frame(self, name):

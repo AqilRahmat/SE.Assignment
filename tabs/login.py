@@ -55,10 +55,6 @@ class Login(ctk.CTkFrame):
         ctk.CTkButton(register_frame, text="Register New Account", command=lambda: self.controller.show_frame("Register"),
                       fg_color="#FCE4EC", hover_color="#FF8AB3", font=("Arial Bold", 9), text_color="#4A4E69", width=225).place(relx=0.5, y=370, anchor="center")
 
-        button = ctk.CTkButton(self, text="Exit", command=lambda: self.controller.show_frame("Testing"),
-                               fg_color="#FCE4EC", hover_color="#FF8AB3", font=("Arial Bold", 12), text_color="#4A4E69")
-        button.pack(pady=10)
-
     def validate_login(self):
         exist_in_admin = dbfunction.fetch_entry('admin_id', 'administrator', 'admin_id', self.icinput_field.get())
         exist_in_account = dbfunction.fetch_entry('accountant_id', 'accountant', 'accountant_id', self.icinput_field.get())

@@ -1,3 +1,5 @@
+from tkinter import PhotoImage
+
 import customtkinter as ctk
 from PIL import ImageTk, Image
 
@@ -33,7 +35,7 @@ def parent_nav(self):
     profile_button.pack(side="left", padx=5, pady=5)
 
     logout_button = ctk.CTkButton(button_frame, text="Logout",
-                                  command=lambda: self.controller.show_frame("Testing"),
+                                  command=lambda: self.controller.show_frame("Login"),
                                   width=120, height=40, corner_radius=8,
                                   hover_color="#FF8AB3", fg_color="#FFAFCC",
                                   text_color="#4A4E69", font=("Arial", 12, "bold"))
@@ -64,7 +66,7 @@ def nav(self):
     contact_button.pack(side="left", padx=5, pady=5)
 
     logout_button = ctk.CTkButton(button_frame, text="Logout",
-                                  command=lambda: self.controller.show_frame("Testing"),
+                                  command=lambda: self.controller.show_frame("Login"),
                                   width=120, height=40, corner_radius=8,
                                   hover_color="#FF8AB3", fg_color="#FFAFCC",
                                   text_color="#4A4E69", font=("Arial", 12, "bold"))

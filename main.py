@@ -18,7 +18,7 @@ class MyApp(ctk.CTk):
         self.resizable(width=False, height=False)
 
         self.frame_manager = FrameManager(self)
-        self.frame_manager.show_frame("Testing")
+        self.frame_manager.show_frame("Login")
 
         update_overdue_status()
 
