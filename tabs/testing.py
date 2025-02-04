@@ -4,11 +4,14 @@ import sys
 
 import customtkinter as ctk
 
+from dbfunction import update_overdue_status
+
+
 class Testing(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-
+        update_overdue_status()
 
         label = ctk.CTkLabel(self, text="Testing")
         label.pack(pady=20)

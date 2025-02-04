@@ -1,5 +1,6 @@
 #this file is only used to switch between the tabs inside the program.
 #if you do edit this file, please make sure everything works before committing
+from dbfunction import update_overdue_status
 from tabs.accountant import Account
 from tabs.admin import Admin
 from tabs.login import Login
@@ -29,8 +30,10 @@ class FrameManager:
         frame_to_show = self.frames[name]
         frame_to_show.pack(fill="both", expand=True)
 
+        update_overdue_status()
+
         # Call populate_parent_tree only if the Parent frame is being shown
         if name == "Parent":
-            frame_to_show.populate_parent_tree()
+            frame_to_show.create_frame_for_parent()
         if name == "Account":
             frame_to_show.populate_tree()
