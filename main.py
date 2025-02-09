@@ -1,5 +1,3 @@
-import sqlite3
-
 import customtkinter as ctk
 import database
 from dbfunction import update_overdue_status

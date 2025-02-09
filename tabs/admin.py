@@ -1,3 +1,5 @@
+import tkinter
+
 import customtkinter as ctk
 import sqlite3
 import dbfunction
@@ -31,7 +33,7 @@ class Admin(ctk.CTkFrame):
                                       segmented_button_fg_color='#FFAFCC',
                                       segmented_button_unselected_color="#FFAFCC",
                                       segmented_button_unselected_hover_color="#FF8AB3")
-        self.tabview.pack(expand=False, padx=10, pady=5, fill="both")
+        self.tabview.pack(expand=False, padx=10, pady=5)
 
         # Tabs
         self.add_user_tab = self.tabview.add("Add User")
@@ -49,7 +51,7 @@ class Admin(ctk.CTkFrame):
 
         add_user_frame = ctk.CTkFrame(self.add_user_tab, fg_color="#EDE7F6", corner_radius=15, border_width=1,
                                       border_color="#BDBDBD")
-        add_user_frame.pack(fill="x", padx=10, pady=10)
+        add_user_frame.pack(fill="x", padx=5, pady=10)
 
         user_id_entry = ctk.CTkEntry(add_user_frame, placeholder_text="User ID")
         user_id_entry.pack(pady=5)
@@ -168,10 +170,13 @@ class Admin(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(parent_list_frame, fg_color="transparent")
         header_frame.pack(fill="x", padx=5, pady=5)
 
-        ctk.CTkLabel(header_frame, text="Parent ID", width=100, anchor="w", font=("Arial", 12, "bold")).grid(row=0, column=0, padx=5)
-        ctk.CTkLabel(header_frame, text="Parent Name", width=200, anchor="w", font=("Arial", 12, "bold")).grid(row=0, column=1, padx=5)
-        ctk.CTkLabel(header_frame, text="Contact Number", width=150, anchor="w", font=("Arial", 12, "bold")).grid(row=0, column=2, padx=5)
-        ctk.CTkLabel(header_frame, text="Username", width=150, anchor="w", font=("Arial", 12, "bold")).grid(row=0, column=3, padx=5)
+
+
+
+        ctk.CTkLabel(header_frame, text="Parent ID", width=100, anchor=tkinter.CENTER, font=("Arial", 12, "bold")).grid(row=0, column=0, padx=5)
+        ctk.CTkLabel(header_frame, text="Parent Name", width=200, anchor=tkinter.CENTER, font=("Arial", 12, "bold")).grid(row=0, column=1, padx=5)
+        ctk.CTkLabel(header_frame, text="Contact Number", width=150, anchor=tkinter.CENTER, font=("Arial", 12, "bold")).grid(row=0, column=2, padx=5)
+        ctk.CTkLabel(header_frame, text="Username", width=150, anchor=tkinter.CENTER, font=("Arial", 12, "bold")).grid(row=0, column=3, padx=5)
 
         # Add a horizontal separator below the header
         separator = ctk.CTkFrame(parent_list_frame, height=2, fg_color="gray")

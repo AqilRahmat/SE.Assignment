@@ -197,12 +197,17 @@ class Account(ctk.CTkFrame):
 
         conn.close()
 
+    def load_users(self):
+        """Refreshes the user list and updates the tree view."""
+        self.populate_tree()  # Refresh fee records in the tree view
+        self.update_parent_combobox()  # Refresh parent combobox
+
     def add_fee(self):
         """Adds a new fee record, ensuring no duplicate Fee Record ID."""
         fee_id = self.fee_id_entry.get().strip()
         amount = self.amount_entry.get().strip()
         status = self.status_var.get()
-        parent = self.parent_id_box.get().strip()
+        parent_name = self.parent_id_box.get().strip()
 
         # Validation checks
         if not fee_id:
@@ -222,13 +227,22 @@ class Account(ctk.CTkFrame):
             messagebox.showerror("Error", "Fee Amount must be a valid number.")
             return
 
-        if parent == "Select Parent":
+        if parent_name == "Select Parent":
             messagebox.showerror("Error", "Please select a Parent.")
             return
 
-        # Check for duplicate Fee Record ID
+        # Fetch parent_id from the database using the selected parent name
         conn = sqlite3.connect("CeriaPay.db")
         cursor = conn.cursor()
+        cursor.execute("SELECT parent_id FROM parent WHERE parent_name = ?", (parent_name,))
+        parent_id = cursor.fetchone()
+        if not parent_id:
+            messagebox.showerror("Error", "Selected parent does not exist.")
+            conn.close()
+            return
+        parent_id = parent_id[0]  # Extract the parent_id
+
+        # Check for duplicate Fee Record ID
         cursor.execute("SELECT COUNT(*) FROM feerecord WHERE feerecord_id = ?", (fee_id,))
         result = cursor.fetchone()[0]
 
@@ -237,13 +251,18 @@ class Account(ctk.CTkFrame):
             conn.close()
             return
 
-        # Insert into database using dbfunction module
+        # Insert into database
         try:
-            dbfunction.insert_into_feerecorddatabase(fee_id, parent, amount, status)
+            cursor.execute("""
+                INSERT INTO feerecord (feerecord_id, parent_id, feerecord_amount, feerecord_status, feerecord_duedate, feerecord_timecreated)
+                VALUES (?, ?, ?, ?, DATE('now', '+7 days'), datetime('now', 'localtime'))
+            """, (fee_id, parent_id, amount, status))
+            conn.commit()
             self.populate_tree()  # Refresh table
+            self.update_parent_combobox()  # Update parent combobox
             messagebox.showinfo("Success", "Fee record added successfully!")
-        except sqlite3.IntegrityError:
-            messagebox.showerror("Error", "Database error: Could not insert record.")
+        except sqlite3.IntegrityError as e:
+            messagebox.showerror("Error", f"Database error: {e}")
         finally:
             conn.close()
 
@@ -303,6 +322,7 @@ class Account(ctk.CTkFrame):
         conn.close()
 
         self.populate_tree()  # Refresh table
+        self.update_parent_combobox()  # Refresh parent combobox
         messagebox.showinfo("Success", "Fee record deleted successfully!")
 
     def select_record(self, event):
