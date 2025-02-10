@@ -64,12 +64,10 @@ class Parent(ctk.CTkFrame):
         payment_button.pack(side="left", fill='both', padx=15, pady=10)
 
     def get_payment_frame_values(self):
-        """Fetch the next due date and amount owed."""
         self.duedate_actual = self.get_due_date()
         self.amount_owed = self.get_amount_owed()
 
     def get_due_date(self):
-        """Fetch the earliest due date for pending or overdue payments."""
         id = Login.ic_for_profile
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
@@ -91,7 +89,6 @@ class Parent(ctk.CTkFrame):
         return result[0] if result else "No Outstanding Invoice"
 
     def get_amount_owed(self):
-        """Fetch the amount owed for the earliest pending or overdue payment."""
         id = Login.ic_for_profile
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
@@ -113,7 +110,6 @@ class Parent(ctk.CTkFrame):
         return result[0] if result else "0"
 
     def history_frame(self):
-        """Create a frame for the payment history table."""
         table_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="#EDE7F6", border_width=1, border_color="#BDBDBD", corner_radius=15)
         table_frame.pack(fill="both", expand=True, padx=15, pady=10)
 
@@ -139,7 +135,6 @@ class Parent(ctk.CTkFrame):
         self.tree.pack(fill="both", expand=True)
 
     def update_all_labels(self):
-        """Refresh all labels and the payment history table."""
         self.get_payment_frame_values()
 
         # Update the labels showing due date and amount owed
@@ -150,7 +145,6 @@ class Parent(ctk.CTkFrame):
         self.populate_parent_tree()
 
     def payment_window(self):
-        """Create a payment window for the parent to make payments."""
         payment = ctk.CTkToplevel()
         payment.attributes("-topmost", True)
 
@@ -182,27 +176,46 @@ class Parent(ctk.CTkFrame):
         ctk.CTkRadioButton(options_frame, text="FPX", variable=self.payment_method, value="FPX").pack(side="left", padx=10)
 
         submit_button = ctk.CTkButton(payment, text="Submit Payment", fg_color="#FFAFCC", hover_color="#FDCFE8",
-                                      text_color="black", command=self.process_payment)
+                                      text_color="black", command=lambda:self.process_payment(payment))
         submit_button.pack(pady=20)
 
-    def process_payment(self):
-        """Process the payment and update the database."""
+    def process_payment(self, payment):
         record_id = self.id_entry.get()
         amount = self.amount_entry.get()
+        parent_id = Login.ic_for_profile
 
-        # Fetch the amount owed from the database
-        amount_owed = dbfunction.fetch_entry('feerecord_amount', 'feerecord', 'feerecord_id', record_id)
+        conn = sqlite3.connect("CeriaPay.db")
+        c = conn.cursor()
 
-        # Validate the entries
-        if not record_id or not amount:
-            messagebox.showerror("Error", "Please fill in both the Record ID and Amount.")
+        c.execute(
+            """SELECT feerecord_amount, feerecord_status FROM feerecord 
+               WHERE feerecord_id = ? AND parent_id = ?""",
+            (record_id, parent_id)
+        )
+        result = c.fetchone()  # Fetch the result (None if no match)
+
+        conn.close()
+
+        if not result:
+            messagebox.showerror("Error",
+                                 "Invalid Record ID. Please enter a valid Invoice ID.")
+            return
+
+        amount_owed, status = result  # Get the amount owed and status from the database
+
+        if status == "Paid":
+            messagebox.showerror("Error", "This fee has already been paid.")
+            return
+
+        # Validate amount input
+        if not amount:
+            messagebox.showerror("Error", "Please enter the payment amount.")
             return
 
         try:
-            amount = float(amount)  # Convert user input to float
-            amount_owed = float(amount_owed) if amount_owed else 0  # Convert DB value to float
+            amount = float(amount)  # Convert input to float
+            amount_owed = float(amount_owed)  # Convert database value to float
 
-            # Ensure entered amount is at least the amount owed
             if amount < amount_owed:
                 messagebox.showerror("Error", "Amount must be equal to or greater than the amount owed.")
                 return
@@ -211,14 +224,16 @@ class Parent(ctk.CTkFrame):
             messagebox.showerror("Error", "Amount must be a valid number.")
             return
 
-        # If validation passes, update the database and labels
+        # If validation passes, update the fee record
         self.update_feerecord(record_id)
         self.update_all_labels()
 
         messagebox.showinfo("Success", "Payment processed successfully!")
 
+        # Close the payment window
+        payment.destroy()
+
     def update_feerecord(self, record_id):
-        """Mark the fee record as 'Paid' in the database."""
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
 
@@ -230,7 +245,6 @@ class Parent(ctk.CTkFrame):
         conn.close()
 
     def populate_parent_tree(self):
-        """Loads all records into the payment history table."""
         parent_id_for_tree = Login.ic_for_profile
         for row in self.tree.get_children():
             self.tree.delete(row)  # Clear table
@@ -242,3 +256,74 @@ class Parent(ctk.CTkFrame):
         for record in cursor.fetchall():
             self.tree.insert("", "end", values=record)
         conn.close()
+
+    # popup for profile window
+    def profile_window(self):
+        profile = ctk.CTkToplevel()
+        profile.attributes("-topmost", True)
+        profile.iconbitmap("Img/CERIAPAY_WINDOWICON.ico")
+
+        profile.title("User Profile")
+        profile.geometry("400x400")
+
+        ctk.CTkLabel(profile, text="User Profile", font=("Arial", 18, "bold"), text_color="#4A4E69").pack(pady=15)
+
+        username_label = ctk.CTkLabel(profile, text=f"Username: {Login.username_for_profile}", font=("Arial", 14))
+        username_label.pack(pady=5)
+
+        number_label = ctk.CTkLabel(profile, text="Phone Number:", font=("Arial", 14))
+        number_label.pack(pady=5)
+
+        self.real_number_label = ctk.CTkLabel(profile, text=Login.phonenum_for_profile, font=("Arial", 14, "bold"))
+        self.real_number_label.pack(pady=5)
+
+        self.number_change_field = ctk.CTkEntry(profile, placeholder_text="Insert new Number")
+        self.number_change_field.pack(pady=5)
+
+        ctk.CTkButton(profile, text="Change Number", command=self.number_change, fg_color="#FFAFCC", hover_color="#FDCFE8", text_color='black').pack(pady=5)
+
+        password_label = ctk.CTkLabel(profile, text="Password:", font=("Arial", 14))
+        password_label.pack(pady=5)
+
+        self.password_change_field = ctk.CTkEntry(profile, show="*", placeholder_text="Insert New Password")
+        self.password_change_field.pack(pady=5)
+
+        ctk.CTkButton(profile, text="Change Password", command=self.password_change, fg_color="#A2D2FF", hover_color="#BDE0FE", text_color='black').pack(pady=5)
+
+    def password_change(self):
+        new_password = self.password_change_field.get()
+        if new_password == Login.password_for_profile:
+            messagebox.showinfo("ERROR", "New password cannot be the same as the old one.")
+            self.password_change_field.delete(0, 'end')
+            return
+        else:
+            dbfunction.update_entry('parent', 'parent_password', new_password, 'parent_id', Login.ic_for_profile)
+
+            Login.password_for_profile = new_password
+            messagebox.showinfo("Password changed", "Password changed successfully!")
+            self.password_change_field.delete(0, 'end')
+            return
+
+    def number_change(self):
+        new_number = self.number_change_field.get()
+        if new_number == Login.phonenum_for_profile:
+            messagebox.showinfo("ERROR", "New number cannot be the same as the old one.")
+            self.number_change_field.delete(0, 'end')
+            return
+        else:
+            # Update the phone number in the database
+            dbfunction.update_entry('parent', 'parent_contactnum', new_number, 'parent_id', Login.ic_for_profile)
+
+            # Update the phonenum in the Login class and real_number_label
+            Login.phonenum_for_profile = new_number
+            self.real_number_label.configure(text=Login.phonenum_for_profile)
+
+            # Explicitly refresh the label
+            self.real_number_label.update_idletasks()  # Force UI to update
+
+            # Show success message
+            messagebox.showinfo("Number changed", "Number changed successfully!")
+
+            # Clear the input field
+            self.number_change_field.delete(0, 'end')
+            return
