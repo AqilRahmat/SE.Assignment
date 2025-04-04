@@ -108,7 +108,7 @@ def create_trigger():
     conn = sqlite3.connect("CeriaPay.db")
     c = conn.cursor()
 
-    # Create the trigger
+    # Create the trigger with the condition to avoid changing paid records
     c.execute('''
     CREATE TRIGGER IF NOT EXISTS update_overdue_status
     AFTER UPDATE ON feerecord
@@ -116,7 +116,9 @@ def create_trigger():
     BEGIN
         UPDATE feerecord
         SET feerecord_status = 'OVERDUE'
-        WHERE feerecord_duedate < DATE('now') AND feerecord_status != 'OVERDUE';
+        WHERE feerecord_duedate < DATE('now') 
+        AND feerecord_status != 'OVERDUE'
+        AND feerecord_status != 'Paid';  
     END;
     ''')
 
@@ -129,11 +131,15 @@ def update_overdue_status():
     c = conn.cursor()
 
     # Update all overdue records
-    c.execute('''
+    c.execute(''' 
         UPDATE feerecord
         SET feerecord_status = 'OVERDUE'
-        WHERE feerecord_duedate < DATE('now') AND feerecord_status != 'OVERDUE'
+        WHERE feerecord_duedate < DATE('now') 
+        AND feerecord_status != 'OVERDUE'
+        AND feerecord_status != 'Paid';
     ''')
 
+    # Commit and close connection
     conn.commit()
+
     conn.close()

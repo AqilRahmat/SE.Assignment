@@ -108,7 +108,7 @@ class Account(ctk.CTkFrame):
         self.update_status_label = ctk.CTkLabel(update_grid, text="New Status:")
         self.update_status_label.grid(row=1, column=0, padx=5, pady=3, sticky="e")
         self.update_status_var = ctk.StringVar(value="Pending")
-        self.update_status_menu = ctk.CTkComboBox(update_grid, values=["Pending", "Paid"],
+        self.update_status_menu = ctk.CTkComboBox(update_grid, values=['Pending', 'Paid'],
                                                   variable=self.update_status_var, width=150)
         self.update_status_menu.grid(row=1, column=1, padx=5, pady=3, sticky="w")
 

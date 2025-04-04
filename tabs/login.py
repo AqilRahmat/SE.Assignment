@@ -13,6 +13,7 @@ class Login(ctk.CTkFrame):
         super().__init__(parent)
         self.controller = controller
 
+
         # Load images
         side_img_data = Image.open("Img/side-img.png")
         side_img = ctk.CTkImage(dark_image=side_img_data, light_image=side_img_data, size=(896, 720))

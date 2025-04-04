@@ -11,6 +11,7 @@ class Register(ctk.CTkFrame):
         super().__init__(parent)
         self.controller = controller
 
+
         # Load images
         side_img_data = Image.open("Img/side-img.png")
         side_img = ctk.CTkImage(dark_image=side_img_data, light_image=side_img_data, size=(896, 720))
@@ -99,8 +100,14 @@ class Register(ctk.CTkFrame):
     def validate_inserted(self):
         exist = dbfunction.fetch_entry('parent_id', "parent", "parent_id", self.icinput_field.get())
 
-        if (self.icinput_field.get() == "" or self.nameinput_field.get() == "" or self.usernameinput_field.get() == "" or self.password_field.get() == ""):
+        if self.icinput_field.get() == "" or self.nameinput_field.get() == "" or self.usernameinput_field.get() == "" or self.password_field.get() == "":
             messagebox.showerror("Error", "Please fill all fields")
+            return
+        if self.icinput_field.get().upper().startswith(("ADM", "ACC")):
+            print(self.icinput_field.get())
+            messagebox.showerror("ERROR", "Invalid Identification Number")
+            self.clear_fields()
+            return
         if exist:
             messagebox.showinfo("ERROR", "Registration Failed! This IC number has already been registered. Please Try Again.")
             self.clear_fields()

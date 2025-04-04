@@ -22,15 +22,21 @@ class Parent(ctk.CTkFrame):
         self.scrollable_frame.pack(fill="both", expand="yes")
 
         #creating a frame
+        self.fees_frame()
+        self.history_frame()
         self.create_frame_for_parent()
 
     #frame inside the window that will hold the functions
     def create_frame_for_parent(self):
-        self.fees_frame()
-        self.history_frame()
         self.populate_parent_tree()
+        self.update_all_labels()
+        self.amount_number.update_idletasks()
+        self.duedate_time.update_idletasks()
 
     def fees_frame(self):
+        #get values for payment frame
+        self.get_payment_frame_values()
+
         # Create fees frame with padding and background color
         fees_frame = ctk.CTkFrame(self.scrollable_frame,
                                   fg_color="#f0f0f0",
@@ -51,13 +57,11 @@ class Parent(ctk.CTkFrame):
                                     text_color="black")
         amount_label.pack(fill='x', pady=5)  # Make label fill horizontally
 
-        amount_owed = self.get_amount_owed()
-
-        amount_number = ctk.CTkLabel(amount_frame,
-                                     text=amount_owed,
+        self.amount_number = ctk.CTkLabel(amount_frame,
+                                     text=self.amount_owed,
                                      font=("Arial", 12),
                                      text_color="black")
-        amount_number.pack(fill='x', pady=5)  # Make label fill horizontally
+        self.amount_number.pack(fill='x', pady=5)  # Make label fill horizontally
 
         # Due date frame (right side) with padding
         duedate_frame = ctk.CTkFrame(fees_frame,
@@ -71,41 +75,52 @@ class Parent(ctk.CTkFrame):
                                      text_color="black")
         duedate_label.pack(fill='x', pady=5)  # Make label fill horizontally
 
-        duedate_actual = self.get_due_date()
-
-        duedate_time = ctk.CTkLabel(duedate_frame,
-                                    text=duedate_actual,
+        self.duedate_time = ctk.CTkLabel(duedate_frame,
+                                    text=self.duedate_actual,
                                     font=("Arial", 12),
                                     text_color="black")
-        duedate_time.pack(fill='x', pady=5)  # Make label fill horizontally
+        self.duedate_time.pack(fill='x', pady=5)  # Make label fill horizontally
 
         # Payment button placed at the bottom of the fees_frame, aligned right
         payment_button = ctk.CTkButton(fees_frame, text="Make Payment", command=self.payment_window)
         payment_button.pack(side="left", fill='both', padx=10, pady=10)
 
+    def get_payment_frame_values(self):
+        self.duedate_actual = self.get_due_date()
+        self.amount_owed = self.get_amount_owed()
+
     def get_due_date(self):
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
 
-        amount  = c.execute("SELECT feerecord_duedate FROM feerecord WHERE feerecord_status = 'OVERDUE' or feerecord_status = 'Pending' ORDER BY feerecord_duedate ASC LIMIT 1")
+        c.execute(
+            "SELECT feerecord_duedate "
+            "FROM feerecord "
+            "WHERE feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending' "
+            "ORDER BY feerecord_timecreated ASC "
+            "LIMIT 1")
 
-        amount = amount.fetchone()[0]
+        result = c.fetchone()
 
         c.close()
 
-        return amount
+        return result[0] if result else "No Outstanding Invoice"
 
     def get_amount_owed(self):
         conn = sqlite3.connect("CeriaPay.db")
         c = conn.cursor()
 
-        amount  = c.execute("SELECT feerecord_amount FROM feerecord WHERE feerecord_status = 'OVERDUE' or feerecord_status = 'Pending' ORDER BY feerecord_duedate ASC LIMIT 1")
+        c.execute(
+            "SELECT feerecord_amount "
+            "FROM feerecord "
+            "WHERE feerecord_status = 'OVERDUE' OR feerecord_status = 'Pending' "
+            "ORDER BY feerecord_timecreated ASC LIMIT 1")
 
-        amount = amount.fetchone()[0]
+        result = c.fetchone()
 
         c.close()
 
-        return amount
+        return result[0] if result else "0"
 
 
     def history_frame(self):
@@ -137,6 +152,17 @@ class Parent(ctk.CTkFrame):
 
         self.tree.pack(fill="both", expand=True)
 
+    def update_all_labels(self):
+        # Fetch updated due date and amount owed from the database
+        self.get_payment_frame_values()
+
+        # Update the labels showing due date and amount owed
+        self.amount_number.configure(text=self.amount_owed)  # Update the amount owed label
+        self.duedate_time.configure(text=self.duedate_actual)  # Update the due date label
+
+        # Refresh the table/treeview for payment history to reflect the current data
+        self.populate_parent_tree()
+
     #payment window
     def payment_window(self):
         payment = ctk.CTkToplevel()
@@ -147,6 +173,66 @@ class Parent(ctk.CTkFrame):
 
         label = ctk.CTkLabel(payment, text="Payment")
         label.pack()
+
+        #label and entry for record id
+        id_label = ctk.CTkLabel(payment, text="ID")
+        id_label.pack(pady=10)
+        self.id_entry = ctk.CTkEntry(payment)
+        self.id_entry.pack(pady=10)
+
+        #label and entry for amount
+        amount_label = ctk.CTkLabel(payment, text="Amount")
+        amount_label.pack(pady=10)
+        self.amount_entry = ctk.CTkEntry(payment)
+        self.amount_entry.pack(pady=10)
+
+        #payment method selection
+        self.payment_method = ctk.StringVar()
+        self.payment_method.set("Credit Card")
+
+        credit_card_button = ctk.CTkRadioButton(payment, text="Credit Card", variable=self.payment_method,value="Credit Card")
+        credit_card_button.pack(pady=5)
+
+        debit_button = ctk.CTkRadioButton(payment, text="Debit Card", variable=self.payment_method, value="Debit Card")
+        debit_button.pack(pady=5)
+
+        fpx_button = ctk.CTkRadioButton(payment, text="FPX", variable=self.payment_method, value="FPX")
+        fpx_button.pack(pady=5)
+
+        # Submit button to process payment
+        submit_button = ctk.CTkButton(payment, text="Submit Payment", command=self.process_payment)
+        submit_button.pack(pady=20)
+
+    def process_payment(self):
+        record_id = self.id_entry.get()
+        amount = self.amount_entry.get()
+
+        # Validate the entries
+        if not record_id or not amount:
+            messagebox.showerror("Error", "Please fill in both the Record ID and Amount.")
+            return
+
+        try:
+            amount = float(amount)
+        except ValueError:
+            messagebox.showerror("Error", "Amount must be a number.")
+            return
+
+        #if pass validation
+        self.update_feerecord()
+        self.update_all_labels()
+
+    def update_feerecord(self):
+        record_id = self.id_entry.get()
+        conn = sqlite3.connect("CeriaPay.db")
+        c = conn.cursor()
+
+        c.execute("UPDATE feerecord SET feerecord_status = 'Paid' WHERE feerecord_id = ? AND parent_id = ? ", (record_id, Login.username_for_profile))
+
+        conn.commit()
+        c.close()
+        self.get_payment_frame_values()
+        self.populate_parent_tree()
 
     # popup for profile window
     def profile_window(self):
@@ -196,6 +282,8 @@ class Parent(ctk.CTkFrame):
             return
         else:
             dbfunction.update_entry('parent', 'parent_password', new_password, 'parent_id', Login.ic_for_profile)
+
+            Login.password_for_profile = new_password
             messagebox.showinfo("Password changed", "Password changed successfully!")
             self.password_change_field.delete(0, 'end')
             return
@@ -226,7 +314,6 @@ class Parent(ctk.CTkFrame):
 
     def populate_parent_tree(self):
         parent_id_for_tree = Login.ic_for_profile
-        print(parent_id_for_tree)
         """Loads all records into the table."""
         for row in self.tree.get_children():
             self.tree.delete(row)  # Clear table
